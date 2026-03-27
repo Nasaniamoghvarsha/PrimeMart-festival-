@@ -44,8 +44,8 @@ PrimeMart is a modern, responsive electronics marketplace built with Flask and M
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/primemart.git
-   cd primemart
+   git clone https://github.com/Nasaniamoghvarsha/PrimeMart-festival-.git
+   cd PrimeMart-festival-
    ```
 
 2. Create and activate a virtual environment:
