@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block content %}
+<video autoplay muted loop class="video-background">
+    <source src="{{ url_for('static', filename='videos/video.mp4') }}" type="video/mp4">
+    Your browser does not support the video tag.
+</video>
+<div class="video-overlay"></div>
+<style>
+  .auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  
+  .auth-card {
+    width: 100%;
+    max-width: 500px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    padding: 40px;
+    animation: fadeInUp 0.7s ease forwards;
+  }
+  
+  .auth-card h2 {
+    color: #1e3c72;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  
+  .auth-card p {
+    color: #4b5563;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .auth-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .auth-card input {
+    padding: 12px 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 16px;
+  }
+  
+  .btn-primary {
+    background: #1e3c72;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+    margin-top: 10px;
+  }
+  
+  .btn-primary:hover {
+    background: #2a5298;
+  }
+  
+  .signup-text {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  .signup-text a {
+    color: #1e3c72;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .signup-text a:hover {
+    text-decoration: underline;
+  }
+  
+  hr {
+    border: 0;
+    height: 1px;
+    background: #e5e7eb;
+    margin: 20px 0;
+  }
+  
+  .social-login {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+  }
+  
+  .btn-social {
+    padding: 10px 20px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+  }
+  
+  .btn-social:hover {
+    background: #f8fafc;
+    transform: translateY(-2px);
+  }
+  
+  .btn-social.google {
+    color: #db4437;
+  }
+  
+  .btn-social.facebook {
+    color: #4267B2;
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
+
+<div class="auth-container">
+  <div class="auth-card">
+    <h2>Create Retailer Account</h2>
+    <p>Sign up to start adding products</p>
+    <form action="{{ url_for('auth_bp.retailer_signup') }}" method="POST">
+      <input type="text" name="name" placeholder="Business/Owner Name" required>
+      <input type="email" name="email" placeholder="Email" required>
+      <input type="password" name="password" placeholder="Password" required>
+      <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+      <button type="submit" class="btn-primary">Create Retailer Account</button>
+    </form>
+    <p class="signup-text">Already have a retailer account? <a href="{{ url_for('auth_bp.retailer_login') }}">Retailer Login</a></p>
+    <p class="signup-text">Shopping instead? <a href="{{ url_for('auth_bp.signup') }}">Create Account</a> • <a href="{{ url_for('auth_bp.login') }}">User Login</a></p>
+    <hr>
+    <p>Or sign up with</p>
+    <div class="social-login">
+      <button class="btn-social google">Google</button>
+      <button class="btn-social facebook">Facebook</button>
+    </div>
+  </div>
+</div>
+{% endblock %}

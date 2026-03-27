@@ -1,0 +1,453 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-info">
+            <h1>{% if is_retailer %}Received Orders{% else %}Order History{% endif %}</h1>
+            <p class="email">{% if is_retailer %}View and manage orders for your products{% else %}View and track your orders{% endif %}</p>
+        </div>
+    </div>
+
+    <div class="profile-sections">
+        <div class="profile-nav">
+            <a href="{{ url_for('product_bp.profile') }}" class="nav-item">
+                <span>📋</span> Account Overview
+            </a>
+            <a href="{{ url_for('product_bp.retailer_orders' if is_retailer else 'product_bp.orders') }}" class="nav-item active">
+                <span>📦</span> {% if is_retailer %}Received Orders{% else %}My Orders{% endif %}
+            </a>
+            <a href="#" class="nav-item">
+                <span>⚙️</span> Settings
+            </a>
+        </div>
+
+        <div class="profile-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else 'info' }}" 
+                             style="margin-bottom: 24px; padding: 12px 16px; border-radius: 6px; 
+                                    background-color: {{ '#fee2e2' if category == 'error' else '#e0f2fe' }}; 
+                                    color: {{ '#991b1b' if category == 'error' else '#075985' }};">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% if not orders %}
+                <div class="empty-orders">
+                    <div class="empty-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                    </div>
+                    <h2>{% if is_retailer %}No Orders Received{% else %}No Orders Yet{% endif %}</h2>
+                    <p>{% if is_retailer %}You haven't received any orders yet. Your orders will appear here when customers purchase your products.{% else %}You haven't placed any orders yet. Start shopping to see your order history here.{% endif %}</p>
+                    {% if not is_retailer %}
+                    <a href="{{ url_for('product_bp.store') }}" class="btn-primary">
+                        Start Shopping
+                    </a>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="orders-list">
+                    {% for order in orders %}
+                        <div class="order-card">
+                            <div class="order-header">
+                                <div class="order-meta">
+                                    <div class="order-date">
+                                        <span class="label">Order Placed</span>
+                                        <span class="value">
+                                            {% if order.created_at and order.created_at != 'N/A' %}
+                                                {{ order.created_at.strftime('%B %d, %Y') if order.created_at is string == False else order.created_at }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <div class="order-total">
+                                        <span class="label">Total</span>
+                                        <span class="value">${{ '%.2f'|format(order.total) }}</span>
+                                    </div>
+                                    <div class="order-id">
+                                        <span class="label">Order #</span>
+                                        <span class="value">{{ order._id[:8]|upper }}</span>
+                                    </div>
+                                </div>
+                                <div class="order-status {{ order.status|lower }}">
+                                    {{ order.status|capitalize }}
+                                </div>
+                            </div>
+                            
+                            <div class="order-items">
+                                {% for item in order.order_items %}
+                                    <div class="order-item {% if not loop.last %}has-divider{% endif %}">
+                                        {% if item.image_url %}
+                                            <img src="{{ item.image_url }}" alt="{{ item.name }}" class="item-image">
+                                        {% else %}
+                                            <div class="item-image-placeholder">
+                                                <span>📦</span>
+                                            </div>
+                                        {% endif %}
+                                        
+                                        <div class="item-details">
+                                            <h3 class="item-name">{{ item.name }}</h3>
+                                            <div class="item-meta">
+                                                <span class="item-qty">Qty: {{ item.qty }}</span>
+                                                <span class="item-price">${{ '%.2f'|format(item.price * item.qty) }}</span>
+                                                {% if is_retailer and order.customer_name %}
+                                                <div class="customer-info">
+                                                    <span>Customer: {{ order.customer_name }}</span>
+                                                    {% if order.customer_email %}
+                                                    <span class="customer-email">{{ order.customer_email }}</span>
+                                                    {% endif %}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                                
+                                <div class="order-actions">
+                                    {% if not is_retailer %}
+                                    <a href="#" class="btn-outline">
+                                        Track Order
+                                    </a>
+                                    <a href="#" class="btn-outline">
+                                        Leave Review
+                                    </a>
+                                    {% else %}
+                                    <a href="#" class="btn-outline">
+                                        Update Status
+                                    </a>
+                                    <a href="#" class="btn-primary">
+                                        Contact Customer
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+/* Base styles from profile page */
+.profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.profile-header {
+    margin-bottom: 32px;
+    padding: 24px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.profile-info h1 {
+    margin: 0;
+    font-size: 28px;
+    color: #0f172a;
+}
+
+.email {
+    margin: 4px 0 0;
+    color: #64748b;
+}
+
+.profile-sections {
+    display: flex;
+    gap: 24px;
+}
+
+.profile-nav {
+    width: 250px;
+    flex-shrink: 0;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    margin-bottom: 4px;
+    border-radius: 8px;
+    color: #475569;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.nav-item:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.nav-item.active {
+    background: #e0f2fe;
+    color: #0369a1;
+    font-weight: 500;
+}
+
+.nav-item span {
+    margin-right: 12px;
+    font-size: 18px;
+}
+
+.profile-content {
+    flex: 1;
+}
+
+/* Orders specific styles */
+.empty-orders {
+    text-align: center;
+    padding: 48px 24px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.empty-icon {
+    margin-bottom: 16px;
+    color: #cbd5e1;
+}
+
+.empty-orders h2 {
+    margin: 0 0 12px;
+    color: #1e293b;
+    font-size: 20px;
+}
+
+.empty-orders p {
+    color: #64748b;
+    margin-bottom: 24px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Order card styles */
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.order-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background: #f8fafc;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.order-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+
+.order-date, .order-total, .order-id {
+    display: flex;
+    flex-direction: column;
+}
+
+.label {
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+
+.value {
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.order-status {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.order-status.processing {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.order-status.completed {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.order-status.cancelled {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.order-items {
+    padding: 0;
+}
+
+.order-item {
+    display: flex;
+    padding: 16px 24px;
+    align-items: center;
+    gap: 16px;
+}
+
+.order-item.has-divider {
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.item-image, .item-image-placeholder {
+    width: 60px;
+    height: 60px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.item-image-placeholder {
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #cbd5e1;
+}
+
+.item-details {
+    flex: 1;
+}
+
+.item-name {
+    margin: 0 0 6px;
+    font-size: 15px;
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.item-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    color: #64748b;
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.customer-info {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.customer-email {
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+.item-price {
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.order-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding: 16px 24px;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+    gap: 12px;
+}
+
+.btn-outline {
+    padding: 8px 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #fff;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.btn-outline:hover {
+    border-color: #94a3b8;
+    background: #f8fafc;
+}
+
+.btn-primary {
+    padding: 8px 16px;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .profile-sections {
+        flex-direction: column;
+    }
+    
+    .profile-nav {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+    
+    .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .order-status {
+        align-self: flex-start;
+    }
+    
+    .order-actions {
+        flex-wrap: wrap;
+    }
+    
+    .order-actions .btn-outline,
+    .order-actions .btn-primary {
+        flex: 1;
+        text-align: center;
+        min-width: 120px;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,189 @@
+/* ----- Theme Base ----- */
+:root{
+    --pm-blue: #0f4aa3; /* header/footer/button */
+    --pm-blue-dark: #0b3a80;
+    --pm-bg: #f3f6fb; /* page background */
+    --pm-card-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+body{
+    background: var(--pm-bg);
+    color: #0f172a;
+}
+
+/* ----- Auth Pages ----- */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 90vh;
+    background: transparent;
+}
+
+.auth-card {
+    background: #fff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: var(--pm-card-shadow);
+    width: 360px;
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.auth-card:hover {
+    transform: translateY(-5px);
+}
+
+.auth-card h2 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.auth-card p {
+    margin-bottom: 20px;
+    color: #666;
+    font-size: 14px;
+}
+
+.auth-card input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.btn-primary {
+    width: 100%;
+    padding: 12px;
+    background: var(--pm-blue);
+    border: none;
+    color: white;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-primary:hover {
+    background: var(--pm-blue-dark);
+}
+
+.signup-text {
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.signup-text a {
+    color: var(--pm-blue);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.signup-text a:hover {
+    text-decoration: underline;
+}
+
+.social-login {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-social {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: white;
+    font-size: 14px;
+}
+
+.btn-social.google {
+    background: #db4437;
+}
+
+.btn-social.facebook {
+    background: #4267b2;
+}
+
+/* Profile Dropdown Styles */
+/* Profile Dropdown Menu */
+.profile-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-btn {
+    background: none;
+    border: none;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    cursor: pointer;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.dropdown-content {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    min-width: 220px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    margin-top: 0.5rem;
+    display: none;
+    z-index: 1000;
+}
+
+.profile-dropdown.active .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: #333;
+    text-decoration: none;
+}
+
+.dropdown-content a i {
+    width: 1.25rem;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.dropdown-content a:hover {
+    background-color: #f3f4f6;
+}
+
+.dropdown-content a[style*="color: #ef4444"]:hover {
+    background-color: #fef2f2;
+}
+
+/* Rounded corners */
+.dropdown-content a:first-child {
+    border-radius: 8px 8px 0 0;
+}
+
+.dropdown-content a:last-child {
+    border-radius: 0 0 8px 8px;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Chevron rotation */
+.profile-btn .fa-chevron-down {
+    transition: transform 0.2s;
+}
+
+.profile-dropdown.active .fa-chevron-down {
+    transform: rotate(180deg);
+}

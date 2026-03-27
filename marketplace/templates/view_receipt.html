@@ -1,0 +1,388 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="receipt-container">
+        <div class="receipt-header">
+            <h1>Order Receipt</h1>
+            <div class="receipt-meta">
+                <div class="receipt-number">
+                    <span class="label">Receipt #:</span>
+                    <span class="value">{{ order.receipt_id }}</span>
+                </div>
+                <div class="order-number">
+                    <span class="label">Order #:</span>
+                    <span class="value">{{ order._id }}</span>
+                </div>
+                <div class="order-date">
+                    <span class="label">Date:</span>
+                    <span class="value">{{ order.created_at.strftime('%B %d, %Y %I:%M %p') }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="receipt-body">
+            <div class="customer-info">
+                <h3>Customer Information</h3>
+                <p><strong>Email:</strong> {{ order.email }}</p>
+                <p><strong>Payment Method:</strong> Credit Card (ending in ****{{ order.payment_id|last(4) }})</p>
+                <p><strong>Payment Status:</strong> <span class="status completed">Paid</span></p>
+            </div>
+            
+            <div class="order-items">
+                <h3>Order Items</h3>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th class="text-right">Price</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items %}
+                        <tr>
+                            <td class="item-name">{{ item.name }}</td>
+                            <td class="text-right">${{ "%.2f"|format(item.price) }}</td>
+                            <td class="text-center">{{ item.quantity }}</td>
+                            <td class="text-right">${{ "%.2f"|format(item.price * item.quantity) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-right">Subtotal:</td>
+                            <td class="text-right">${{ "%.2f"|format(order.subtotal) }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="text-right">Tax (10%):</td>
+                            <td class="text-right">${{ "%.2f"|format(order.tax) }}</td>
+                        </tr>
+                        <tr class="grand-total">
+                            <td colspan="3" class="text-right"><strong>Total:</strong></td>
+                            <td class="text-right"><strong>${{ "%.2f"|format(order.total) }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            
+            <div class="receipt-actions">
+                <a href="{{ url_for('payment.view_receipt', order_id=order._id) }}?download=1" class="btn btn-primary">
+                    <i class="fas fa-download"></i> Download Receipt (PDF)
+                </a>
+                <a href="{{ url_for('payment.my_orders') }}" class="btn btn-secondary">
+                    <i class="fas fa-list"></i> View All Orders
+                </a>
+                <button onclick="window.print()" class="btn btn-outline">
+                    <i class="fas fa-print"></i> Print Receipt
+                </button>
+            </div>
+        </div>
+        
+        <div class="receipt-footer">
+            <div class="thank-you">
+                <h3>Thank you for shopping with us!</h3>
+                <p>If you have any questions about your order, please contact our support team at support@marketplace.com</p>
+            </div>
+            <div class="company-info">
+                <div class="company-logo">🎄 PrimeMart</div>
+                <p>123 Market Street, Shopping District</p>
+                <p>New York, NY 10001, USA</p>
+                <p>support@marketplace.com | (555) 123-4567</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .receipt-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .receipt-header {
+        background: #8B0000;
+        color: white;
+        padding: 1.5rem 2rem;
+        text-align: center;
+    }
+    
+    .receipt-header h1 {
+        margin: 0 0 1rem 0;
+        font-size: 1.8rem;
+    }
+    
+    .receipt-meta {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+        opacity: 0.9;
+    }
+    
+    .receipt-meta .label {
+        font-weight: 600;
+        margin-right: 0.5rem;
+    }
+    
+    .receipt-body {
+        padding: 2rem;
+    }
+    
+    .customer-info {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 6px;
+        margin-bottom: 2rem;
+    }
+    
+    .customer-info h3 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+        color: #333;
+        font-size: 1.2rem;
+    }
+    
+    .status {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status.completed {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .items-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+    }
+    
+    .items-table th, 
+    .items-table td {
+        padding: 0.75rem;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .items-table th {
+        background: #f8f9fa;
+        text-align: left;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+    }
+    
+    .items-table .text-right {
+        text-align: right;
+    }
+    
+    .items-table .text-center {
+        text-align: center;
+    }
+    
+    .items-table tfoot td {
+        font-weight: 500;
+        border-top: 2px solid #eee;
+        padding-top: 1rem;
+    }
+    
+    .items-table .grand-total td {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #8B0000;
+        border-top: 2px solid #8B0000;
+    }
+    
+    .receipt-actions {
+        display: flex;
+        gap: 1rem;
+        margin: 2rem 0;
+        flex-wrap: wrap;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn i {
+        margin-right: 0.5rem;
+    }
+    
+    .btn-primary {
+        background-color: #8B0000;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background-color: #660000;
+    }
+    
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+    
+    .btn-outline {
+        background-color: transparent;
+        color: #8B0000;
+        border: 1px solid #8B0000;
+    }
+    
+    .btn-outline:hover {
+        background-color: rgba(139, 0, 0, 0.1);
+    }
+    
+    .receipt-footer {
+        background: #f8f9fa;
+        padding: 2rem;
+        border-top: 1px solid #eee;
+    }
+    
+    .thank-you {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .thank-you h3 {
+        color: #8B0000;
+        margin-top: 0;
+    }
+    
+    .company-info {
+        text-align: center;
+        color: #6c757d;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+    
+    .company-logo {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #8B0000;
+        margin-bottom: 0.5rem;
+    }
+    
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        
+        .receipt-container,
+        .receipt-container * {
+            visibility: visible;
+        }
+        
+        .receipt-container {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            border: none;
+            box-shadow: none;
+        }
+        
+        .receipt-actions {
+            display: none;
+        }
+        
+        @page {
+            size: auto;
+            margin: 0;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .receipt-container {
+            margin: 1rem;
+            border-radius: 0;
+        }
+        
+        .receipt-header {
+            padding: 1rem;
+        }
+        
+        .receipt-header h1 {
+            font-size: 1.5rem;
+        }
+        
+        .receipt-meta {
+            flex-direction: column;
+            gap: 0.5rem;
+            text-align: left;
+            align-items: flex-start;
+        }
+        
+        .receipt-body {
+            padding: 1rem;
+        }
+        
+        .items-table {
+            display: block;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        
+        .receipt-actions {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+
+<script>
+    // Check if this is a download request
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const download = urlParams.get('download');
+        
+        if (download === '1' && '{{ order.receipt_path }}') {
+            // Redirect to the PDF file to trigger download
+            window.location.href = '{{ order.receipt_path }}';
+        }
+        
+        // Trigger Santa's receipt delivery message
+        if (typeof santaAction === 'function') {
+            santaAction({
+                text: 'Here\'s your receipt! Keep it safe! 📝',
+                duration: 4000,
+                action: 'point'
+            });
+        }
+    });
+</script>
+{% endblock %}

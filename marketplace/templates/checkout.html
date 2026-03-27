@@ -1,0 +1,927 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1>Checkout</h1>
+    
+    <!-- Debug Information -->
+    <div class="debug-info" style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #ddd;">
+        <h4>Debug Information <button onclick="toggleDebug()" class="btn btn-sm btn-secondary">Toggle</button></h4>
+        <div id="debug-content">
+            <p><strong>Cart Items Count:</strong> {{ cart_items|length }}</p>
+            <p><strong>Subtotal:</strong> {{ "%.2f"|format(subtotal) if subtotal is defined else 'N/A' }}</p>
+            <p><strong>Tax:</strong> {{ "%.2f"|format(tax) if tax is defined else 'N/A' }}</p>
+            <p><strong>Grand Total:</strong> {{ "%.2f"|format(grand_total) if grand_total is defined else 'N/A' }}</p>
+            <pre>{{ cart_items|tojson(indent=2) if cart_items else 'No cart items' }}</pre>
+        </div>
+    </div>
+    
+    <script>
+    function toggleDebug() {
+        const debugContent = document.getElementById('debug-content');
+        if (debugContent.style.display === 'none') {
+            debugContent.style.display = 'block';
+        } else {
+            debugContent.style.display = 'none';
+        }
+    }
+    
+    // Log debug info to console
+    const cartData = {
+        items: {{ cart_items|tojson|safe }},
+        count: {{ cart_items|length }},
+        subtotal: {{ subtotal|default(0) }},
+        tax: {{ tax|default(0) }},
+        grandTotal: {{ grand_total|default(0) }}
+    };
+    
+    console.log('Cart Data:', cartData);
+    
+    // Make sure payment methods are visible
+    document.addEventListener('DOMContentLoaded', function() {
+        const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
+        console.log('Found payment methods:', paymentMethods.length);
+        if (paymentMethods.length === 0) {
+            console.warn('No payment methods found!');
+        } else {
+            console.log('Payment methods found, initializing...');
+        }
+    });
+    </script>
+    
+    {% if not cart_items %}
+        <div class="alert alert-warning">
+            <h4 class="alert-heading">Your cart is empty!</h4>
+            <p>It looks like there are no items in your cart. Please add some products before proceeding to checkout.</p>
+            <hr>
+            <a href="{{ url_for('product_bp.store') }}" class="btn btn-primary">Continue Shopping</a>
+        </div>
+    {% else %}
+        <div class="checkout-container">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> 
+                You have {{ cart_items|length }} item{% if cart_items|length > 1 %}s{% endif %} in your cart.
+            </div>
+            <div class="order-summary">
+                <h2>Order Summary</h2>
+                <div class="order-items">
+                    {% for item in cart_items %}
+                        <div class="order-item">
+                            <div class="item-image">
+                                {% if item.image_url %}
+                                    <img src="{{ item.image_url }}" alt="{{ item.name }}" class="img-thumbnail">
+                                {% else %}
+                                    <div class="no-image">No Image</div>
+                                {% endif %}
+                            </div>
+                            <div class="item-details">
+                                <h4>{{ item.name }}</h4>
+                                <p>Price: ${{ "%.2f"|format(item.price) }}</p>
+                                <p>Quantity: {{ item.quantity }}</p>
+                                <p class="item-total">${{ "%.2f"|format(item.price * item.quantity) }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="order-totals">
+                    <table>
+                        <tr>
+                            <td>Subtotal:</td>
+                            <td colspan="3" class="text-right">${{ "%.2f"|format(subtotal|default(0)) }}</td>
+                        </tr>
+                        <tr>
+                            <td>Tax (10%):</td>
+                            <td colspan="3" class="text-right">${{ "%.2f"|format(tax|default(0)) }}</td>
+                        </tr>
+                        <tr class="font-weight-bold">
+                            <td>Total:</td>
+                            <td colspan="3" class="text-right">${{ "%.2f"|format(grand_total|default(0)) }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="payment-form">
+                <h2>Payment Method</h2>
+                <form id="payment-form" method="POST" onsubmit="return false;">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" class="form-control" 
+                               value="{{ user.get('email', '') }}" required>
+                    </div>
+
+                    <!-- Payment Method Selection -->
+                    <div class="form-group">
+                        <label>Select Payment Method</label>
+                        <div class="payment-methods">
+                            <div class="payment-method">
+                                <input type="radio" id="card" name="payment_method" value="card" checked>
+                                <label for="card">
+                                    <i class="fas fa-credit-card"></i> Credit/Debit Card
+                                </label>
+                            </div>
+                            <div class="payment-method">
+                                <input type="radio" id="paypal" name="payment_method" value="paypal">
+                                <label for="paypal">
+                                    <i class="fab fa-paypal"></i> PayPal
+                                </label>
+                            </div>
+                            <div class="payment-method">
+                                <input type="radio" id="swish" name="payment_method" value="swish">
+                                <label for="swish">
+                                    <i class="fas fa-mobile-alt"></i> Swish
+                                </label>
+                            </div>
+                            <div class="payment-method">
+                                <input type="radio" id="cod" name="payment_method" value="cod">
+                                <label for="cod">
+                                    <i class="fas fa-truck"></i> Cash on Delivery (COD)
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Payment Details -->
+                    <div id="card-payment" class="payment-details">
+                        <div class="form-group">
+                            <label>Card Information</label>
+                            <div id="card-element" class="form-control">
+                                <!-- A Stripe Element will be inserted here. -->
+                            </div>
+                            <div id="card-errors" role="alert" class="error-message"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="name-on-card">Name on Card</label>
+                            <input type="text" id="name-on-card" name="card_name" class="form-control">
+                        </div>
+                    </div>
+
+                    <!-- PayPal Payment Details -->
+                    <div id="paypal-payment" class="payment-details" style="display: none;">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> 
+                            You will be redirected to PayPal to complete your payment.
+                        </div>
+                    </div>
+
+                    <!-- Swish Payment Details -->
+                    <div id="swish-payment" class="payment-details" style="display: none;">
+                        <div class="form-group">
+                            <label for="swish-phone">Phone Number</label>
+                            <input type="tel" id="swish-phone" name="swish_phone" class="form-control" placeholder="+46...">
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> 
+                            You will receive a payment request on your Swish app.
+                        </div>
+                    </div>
+
+                    <!-- COD Payment Details -->
+                    <div id="cod-payment" class="payment-details" style="display: none;">
+                        <div class="alert alert-warning">
+                            <h5><i class="fas fa-info-circle"></i> Cash on Delivery</h5>
+                            <p>Please have the exact amount ready for the delivery person.</p>
+                            <p><strong>Amount to pay on delivery: ${{ "%.2f"|format(grand_total) }}</strong></p>
+                        </div>
+                        <div class="form-group">
+                            <label for="delivery-address">Delivery Address</label>
+                            <textarea id="delivery-address" name="delivery_address" class="form-control" rows="3" required></textarea>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-block" id="submit-button">
+                        Place Order - ${{ "%.2f"|format(grand_total|default(0)) }}
+                    </button>
+                    
+                    <div class="secure-payment">
+                        <i class="fas fa-lock"></i> Secure payment processing
+                    </div>
+                </form>
+
+                <!-- Receipt Section (initially hidden) -->
+                <div id="receipt-section" style="display: none; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                    <h3><i class="fas fa-receipt"></i> Order Confirmation</h3>
+                    <div id="receipt-content">
+                        <!-- Receipt content will be inserted here -->
+                    </div>
+                    <div class="receipt-actions mt-3">
+                        <button id="download-receipt" class="btn btn-outline-primary">
+                            <i class="fas fa-download"></i> Download Receipt (PDF)
+                        </button>
+                        <button id="email-receipt" class="btn btn-outline-secondary">
+                            <i class="fas fa-envelope"></i> Email Receipt
+                        </button>
+                        <a href="{{ url_for('product_bp.store') }}" class="btn btn-success">
+                            <i class="fas fa-shopping-cart"></i> Continue Shopping
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Stripe.js for payment processing -->
+{% if config.STRIPE_PUBLIC_KEY %}
+<script src="https://js.stripe.com/v3/"></script>
+{% endif %}
+<script>
+    // Initialize Stripe only if the key is available
+    var stripe, elements, card;
+    
+    try {
+        stripe = Stripe('{{ config.STRIPE_PUBLIC_KEY }}');
+        
+        // Create an instance of Elements
+        elements = stripe.elements();
+        
+        // Custom styling can be passed to options when creating an Element
+        var style = {
+            base: {
+                color: '#32325d',
+                fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                fontSmoothing: 'antialiased',
+                fontSize: '16px',
+                '::placeholder': {
+                    color: '#aab7c4'
+                }
+            },
+            invalid: {
+                color: '#fa755a',
+                iconColor: '#fa755a'
+            }
+        };
+        
+        // Create an instance of the card Element
+        card = elements.create('card', {
+            style: style,
+            hidePostalCode: true
+        });
+        
+        // Add an instance of the card Element into the `card-element` <div>
+        card.mount('#card-element');
+    } catch (e) {
+        console.error('Error initializing Stripe:', e);
+        document.getElementById('payment-form').innerHTML = '<div class="alert alert-warning">Payment processing is currently unavailable. Please try again later.</div>';
+    }
+    
+    // Toggle payment method details based on selection
+    function initializePaymentMethods() {
+        console.log('Initializing payment methods...');
+        
+        const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
+        const paymentDetails = {
+            'card': document.getElementById('card-payment'),
+            'paypal': document.getElementById('paypal-payment'),
+            'swish': document.getElementById('swish-payment'),
+            'cod': document.getElementById('cod-payment')
+        };
+
+        // Show/hide payment details based on selection
+        function updatePaymentDetails() {
+            const selectedMethod = document.querySelector('input[name="payment_method"]:checked');
+            if (!selectedMethod) return;
+            
+            const methodValue = selectedMethod.value;
+            console.log('Selected payment method:', methodValue);
+            
+            // Hide all payment details first
+            Object.values(paymentDetails).forEach(detail => {
+                if (detail) detail.style.display = 'none';
+            });
+            
+            // Show selected payment method details
+            if (paymentDetails[methodValue]) {
+                console.log('Showing payment details for:', methodValue);
+                paymentDetails[methodValue].style.display = 'block';
+            }
+            
+            // Update button text based on payment method
+            const submitButton = document.getElementById('submit-button');
+            if (submitButton) {
+                if (methodValue === 'cod') {
+                    submitButton.textContent = 'Place Order (Pay on Delivery) - $' + cartData.grandTotal.toFixed(2);
+                } else {
+                    submitButton.textContent = 'Pay Now - $' + cartData.grandTotal.toFixed(2);
+                }
+            }
+        }
+
+        // Add event listeners to payment method radio buttons
+        paymentMethods.forEach(method => {
+            method.addEventListener('change', updatePaymentDetails);
+        });
+        
+        // Initialize payment details visibility
+        updatePaymentDetails();
+        
+        // Make sure at least one payment method is selected
+        if (!document.querySelector('input[name="payment_method"]:checked') && paymentMethods.length > 0) {
+            paymentMethods[0].checked = true;
+            updatePaymentDetails();
+        }
+        
+        return updatePaymentDetails;
+    }
+    
+    // Initialize payment methods when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize payment methods
+        const updatePaymentDetails = initializePaymentMethods();
+        
+        // Handle delivery details form
+        const deliveryForm = document.getElementById('delivery-form');
+        if (deliveryForm) {
+            deliveryForm.style.display = 'none';
+        }
+        
+        // Handle payment form submission
+        const paymentForm = document.getElementById('payment-form');
+        if (paymentForm) {
+            paymentForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                // Show delivery form
+                paymentForm.style.display = 'none';
+                if (deliveryForm) {
+                    deliveryForm.style.display = 'block';
+                    // Update button text for delivery form
+                    const submitButton = document.getElementById('place-order-btn');
+                    if (submitButton) {
+                        const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+                        if (paymentMethod === 'cod') {
+                            submitButton.textContent = 'Place Order (Pay on Delivery)';
+                        } else {
+                            submitButton.textContent = 'Place Order';
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Handle delivery form submission
+        if (deliveryForm) {
+            deliveryForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const submitButton = document.getElementById('place-order-btn');
+                if (submitButton) {
+                    // Show processing state
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+                    
+                    // Simulate payment processing
+                    setTimeout(function() {
+                        // Show success message
+                        submitButton.innerHTML = '<i class="fas fa-check"></i> Done!';
+                        submitButton.className = 'btn btn-success btn-block';
+                        
+                        // Show receipt after a short delay
+                        setTimeout(showReceipt, 1000);
+                    }, 1500);
+                }
+            });
+        }
+        
+        // Function to show receipt
+        function showReceipt() {
+            const paymentForm = document.getElementById('payment-form');
+            const deliveryForm = document.getElementById('delivery-form');
+            const receiptSection = document.getElementById('receipt-section');
+            
+            if (paymentForm) paymentForm.style.display = 'none';
+            if (deliveryForm) deliveryForm.style.display = 'none';
+            
+            if (receiptSection) {
+                // Generate receipt content
+                const receiptContent = document.getElementById('receipt-content');
+                if (receiptContent) {
+                    receiptContent.innerHTML = generateReceipt({
+                        orderId: 'ORD-' + Math.floor(Math.random() * 1000000),
+                        transactionId: 'TXN-' + Math.floor(Math.random() * 1000000),
+                        paymentMethod: getSelectedPaymentMethod(),
+                        deliveryAddress: document.getElementById('delivery-address')?.value || 'N/A'
+                    });
+                }
+                receiptSection.style.display = 'block';
+                receiptSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        
+        // Helper function to get selected payment method
+        function getSelectedPaymentMethod() {
+            const selectedMethod = document.querySelector('input[name="payment_method"]:checked');
+            if (!selectedMethod) return 'Unknown';
+            
+            switch(selectedMethod.value) {
+                case 'card': return 'Credit/Debit Card';
+                case 'paypal': return 'PayPal';
+                case 'swish': return 'Swish';
+                case 'cod': return 'Cash on Delivery';
+                default: return 'Unknown';
+            }
+        }
+        
+        // Re-initialize if the DOM changes (in case of dynamic content)
+        const observer = new MutationObserver(function() {
+            if (!document.querySelector('input[name="payment_method"]:checked')) {
+                console.log('Payment methods changed, reinitializing...');
+                initializePaymentMethods();
+            }
+        });
+        
+        // Start observing the payment methods container
+        const paymentContainer = document.querySelector('.payment-methods');
+        if (paymentContainer) {
+            observer.observe(paymentContainer, { childList: true, subtree: true });
+        }
+    });
+
+
+    // Handle real-time validation errors from the card Element
+    if (typeof card !== 'undefined' && card) {
+        card.addEventListener('change', function(event) {
+            var displayError = document.getElementById('card-errors');
+            if (displayError) {
+                if (event.error) {
+                    displayError.textContent = event.error.message;
+                } else {
+                    displayError.textContent = '';
+                }
+            }
+            }
+        });
+    }
+    
+    // Generate receipt HTML
+    function generateReceipt(orderData) {
+        const date = new Date().toLocaleString();
+        let itemsHtml = '';
+        
+        // Use the cart data from our JavaScript variable
+        cartData.items.forEach(function(item) {
+        itemsHtml += `
+            <tr>
+                <td>${item.name}</td>
+                <td>${item.quantity}</td>
+                <td>$${parseFloat(item.price).toFixed(2)}</td>
+                <td>$${(parseFloat(item.price) * parseInt(item.quantity)).toFixed(2)}</td>
+            </tr>`;
+        });
+        
+        return `
+            <div class="receipt">
+                <div class="receipt-header">
+                    <h2>Order Confirmation</h2>
+                    <p>Order #${orderData.orderId || 'N/A'}</p>
+                    <p>${date}</p>
+                </div>
+                <div class="receipt-body">
+                    <div class="customer-info">
+                        <h4>Customer Information</h4>
+                        <p><strong>Name:</strong> {{ user.get('name', 'Guest') }}</p>
+                        <p><strong>Email:</strong> {{ user.get('email', '') }}</p>
+                        ${orderData.deliveryAddress ? `<p><strong>Delivery Address:</strong> ${orderData.deliveryAddress}</p>` : ''}
+                    </div>
+                    
+                    <div class="order-details">
+                        <h4>Order Details</h4>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Item</th>
+                                    <th>Price</th>
+                                    <th>Qty</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHtml}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="4" class="text-end"><strong>Subtotal:</strong></td>
+                                    <td>${{ "%.2f"|format(subtotal) }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" class="text-end"><strong>Tax (10%):</strong></td>
+                                    <td>${{ "%.2f"|format(tax) }}</td>
+                                </tr>
+                                <tr class="grand-total">
+                                    <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                                    <td><strong>${{ "%.2f"|format(grand_total) }}</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                    
+                    <div class="payment-method">
+                        <h4>Payment Method</h4>
+                        <p>${orderData.paymentMethod || 'Credit/Debit Card'}</p>
+                        ${orderData.transactionId ? `<p><strong>Transaction ID:</strong> ${orderData.transactionId}</p>` : ''}
+                    </div>
+                    
+                    <div class="thank-you">
+                        <p>Thank you for your order! Your order has been received and is being processed.</p>
+                        <p>For any questions, please contact our support team at support@example.com</p>
+                    </div>
+                </div>
+            </div>`;
+    }
+    
+    // Debug function to log element states
+    function debugElement(id) {
+        const el = document.getElementById(id);
+        console.log(`Element ${id}:`, el ? 'Found' : 'NOT FOUND');
+    }
+
+    // Update password visibility toggle
+    function togglePasswordVisibility(inputId) {
+        const input = document.getElementById(inputId);
+        const icon = document.querySelector(`[onclick="togglePasswordVisibility('${inputId}')"] i`);
+        if (!input || !icon) return;
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    // Update eyes icon for password fields
+    function updateEyes() {
+        try {
+            document.querySelectorAll('.input-group-text').forEach((eye) => {
+                const input = eye.previousElementSibling;
+                if (input && input.type === 'password') {
+                    eye.innerHTML = '<i class="fas fa-eye" onclick="togglePasswordVisibility(\'' + (input.id || '') + '\')"></i>';
+                }
+            });
+        } catch (e) {
+            console.warn('Error in updateEyes:', e);
+        }
+    }
+
+    // Handle form submission
+    function handleSubmit(event) {
+        event.preventDefault();
+        
+        const submitButton = document.getElementById('submit-button');
+        if (!submitButton) {
+            console.error('Submit button not found!');
+            return false;
+        }
+        
+        // Show loading state
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
+        
+        // Simulate payment processing
+        setTimeout(() => {
+            // Show success state
+            submitButton.innerHTML = '<i class="fas fa-check"></i> Done!';
+            submitButton.className = 'btn btn-success btn-block';
+            
+            // Show receipt after a short delay
+            setTimeout(showReceipt, 1000);
+        }, 1500);
+        
+        return false;
+    }
+    
+    // Show receipt function
+    function showReceipt() {
+        const paymentForm = document.getElementById('payment-form');
+        const receiptSection = document.getElementById('receipt-section');
+        const receiptContent = document.getElementById('receipt-content');
+        
+        if (paymentForm) paymentForm.style.display = 'none';
+        
+        if (receiptSection && receiptContent) {
+            // Generate receipt content
+            receiptContent.innerHTML = `
+                <h3>Order Confirmation</h3>
+                <p>Thank you for your order!</p>
+                <p>Order #${'ORD-' + Math.floor(Math.random() * 1000000)}</p>
+                <p>We'll send a confirmation email to ${document.getElementById('email')?.value || 'you'}</p>
+                <div class="mt-4">
+                    <a href="{{ url_for('product_bp.store') }}" class="btn btn-primary">Continue Shopping</a>
+                </div>
+            `;
+            
+            receiptSection.style.display = 'block';
+            receiptSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    // Initialize form
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM fully loaded, initializing form...');
+        
+        const form = document.getElementById('payment-form');
+        if (!form) {
+            console.error('Payment form not found!');
+            return;
+        }
+        
+        // Debug all form elements
+        debugElement('email');
+        debugElement('name-on-card');
+        debugElement('swish-phone');
+        debugElement('delivery-address');
+        debugElement('submit-button');
+        debugElement('receipt-section');
+        debugElement('receipt-content');
+        
+        // Log payment method radios
+        const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
+        console.log('Found', paymentMethods.length, 'payment methods');
+        
+        // Log initial payment method
+        const initialMethod = document.querySelector('input[name="payment_method"]:checked');
+        console.log('Initial payment method:', initialMethod ? initialMethod.value : 'none');
+
+        // Initialize payment method visibility
+        updatePaymentDetails();
+
+        // Add submit event to the form
+        if (form) {
+            form.addEventListener('submit', handleSubmit);
+            console.log('Added submit event listener to form');
+        }
+        
+        // Add click event to the button as a fallback
+        const submitButton = document.getElementById('submit-button');
+        if (submitButton) {
+            submitButton.addEventListener('click', handleSubmit);
+            console.log('Added click event listener to submit button');
+        } else {
+            console.error('Submit button not found!');
+        }
+        
+        // Handle payment method selection
+        paymentMethods.forEach(method => {
+            method.addEventListener('change', function() {
+                const submitButton = document.getElementById('submit-button');
+                if (submitButton) {
+                    if (this.value === 'cod') {
+                        submitButton.textContent = 'Place Order (Cash on Delivery)';
+                    } else {
+                        submitButton.textContent = 'Place Order';
+                    }
+                }
+                updatePaymentDetails();
+            });
+        });
+        
+        // Initialize password visibility toggle if needed
+        if (document.querySelector('input[type="password"]')) {
+            updateEyes();
+        }
+</script>
+
+<style>
+    .checkout-container {
+        display: flex;
+        gap: 2rem;
+        margin-top: 2rem;
+    }
+    
+    /* Payment Methods */
+    .payment-methods {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .payment-method {
+        display: flex;
+        align-items: center;
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .payment-method:hover {
+        border-color: #4e73df;
+        background-color: #f8f9fc;
+    }
+    
+    .payment-method input[type="radio"] {
+        margin-right: 10px;
+    }
+    
+    .payment-method i {
+        margin-right: 10px;
+        font-size: 1.2em;
+        color: #4e73df;
+    }
+    
+    .payment-details {
+        margin-top: 20px;
+        padding: 20px;
+        border: 1px solid #e3e6f0;
+        border-radius: 5px;
+        background-color: #f8f9fc;
+    }
+    
+    /* Receipt Styles */
+    .receipt {
+        background: #fff;
+        border: 1px solid #e3e6f0;
+        border-radius: 5px;
+        padding: 30px;
+        max-width: 800px;
+        margin: 0 auto;
+        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    }
+    
+    .receipt-header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e3e6f0;
+    }
+    
+    .receipt-header h2 {
+        color: #4e73df;
+        margin-bottom: 5px;
+    }
+    
+    .receipt-body {
+        margin-top: 20px;
+    }
+    
+    .customer-info, .order-details, .payment-method, .thank-you {
+        margin-bottom: 30px;
+    }
+    
+    .thank-you {
+        text-align: center;
+        padding: 20px;
+        background-color: #f8f9fc;
+        border-radius: 5px;
+    }
+    
+    .receipt-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin-top: 30px;
+    }
+    
+    @media (max-width: 768px) {
+        .checkout-container {
+            flex-direction: column;
+        }
+        
+        .receipt-actions {
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .receipt-actions .btn {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+    }
+    }
+    
+    .order-summary {
+        flex: 1;
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .payment-form {
+        flex: 1;
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .order-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .order-item:last-child {
+        border-bottom: none;
+    }
+    
+    .item-image {
+        width: 100px;
+        height: 100px;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .item-image img {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: cover;
+    }
+    
+    .item-details {
+        flex: 1;
+    }
+    
+    .item-total {
+        font-weight: bold;
+        color: #8B0000;
+    }
+    
+    .order-totals {
+        margin-top: 2rem;
+        border-top: 1px solid #eee;
+        padding-top: 1rem;
+    }
+    
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+    
+    .grand-total {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #eee;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+    }
+    
+    .btn-primary {
+        background-color: #8B0000;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    
+    .btn-primary:hover {
+        background-color: #660000;
+    }
+    
+    .btn-primary:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+    }
+    
+    .secure-payment {
+        margin-top: 1rem;
+        text-align: center;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .secure-payment i {
+        color: #28a745;
+        margin-right: 0.5rem;
+    }
+    
+    .error-message {
+        color: #dc3545;
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    @media (max-width: 768px) {
+        .checkout-container {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}

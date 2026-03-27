@@ -1,0 +1,201 @@
+/* Christmas Theme Colors */
+:root {
+    /* Main Colors */
+    --primary: #1B5E20;    /* Dark Green */
+    --secondary: #C62828;  /* Dark Red */
+    --accent: #FFD700;     /* Gold */
+    --light: #F5F5F5;      /* Off White */
+    --dark: #1A1A1A;       /* Dark Gray */
+    
+    /* Additional Christmas Colors */
+    --xmas-red: #D32F2F;   /* Brighter Red */
+    --xmas-green: #2E7D32; /* Brighter Green */
+    --xmas-gold: #FFC107;  /* Brighter Gold */
+    --snow: #FFFFFF;       /* Pure White for snow */
+    
+    /* Gradients */
+    --gradient-xmas: linear-gradient(135deg, var(--xmas-red) 0%, var(--xmas-green) 100%);
+    --gradient-gold: linear-gradient(135deg, var(--xmas-gold), #FFA000);
+}
+
+/* Global Styles */
+body {
+    background-color: var(--light);
+    color: var(--dark);
+    background-image: radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* Header Styles */
+header {
+    background: var(--gradient-xmas);
+    border-bottom: 4px solid var(--xmas-gold);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Navigation */
+.nav-wrap {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.nav-logo {
+    color: var(--snow);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.nav-logo span {
+    color: var(--xmas-gold);
+}
+
+/* Buttons */
+.btn {
+    transition: all 0.3s ease;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary {
+    background: var(--xmas-red);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #B71C1C;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 2px solid var(--xmas-green);
+    color: var(--xmas-green);
+}
+
+.btn-outline:hover {
+    background: var(--xmas-green);
+    color: white;
+}
+
+/* Cards */
+.card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e0e0e0;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-color: var(--xmas-gold);
+}
+
+.card-header {
+    background: var(--gradient-xmas);
+    color: white;
+    padding: 1rem;
+    font-weight: 600;
+}
+
+/* Forms */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea,
+select {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--xmas-green);
+    box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
+    outline: none;
+}
+
+/* Flash Messages */
+.flash {
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.flash.success {
+    background-color: #E8F5E9;
+    color: var(--xmas-green);
+    border-left: 4px solid var(--xmas-green);
+}
+
+.flash.error {
+    background-color: #FFEBEE;
+    color: var(--xmas-red);
+    border-left: 4px solid var(--xmas-red);
+}
+
+/* Footer */
+footer {
+    background: var(--dark);
+    color: var(--light);
+    padding: 2rem 0;
+    margin-top: 3rem;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+/* Christmas Decoration Elements */
+.christmas-decoration {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Add some holly decoration */
+.holly {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%232E7D32"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/><path d="M12 6c-3.3 0-6 2.7-6 6s2.7 6 6 6 6-2.7 6-6-2.7-6-6-6zm0 10c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: 10;
+}
+
+/* Add some subtle animations */
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .nav-links {
+        background: rgba(0, 0, 0, 0.9);
+    }
+    
+    .dropdown-content {
+        background: rgba(0, 0, 0, 0.95);
+    }
+}
+
+/* Snowflake customization */
+.snowflake {
+    background: white !important;
+    box-shadow: 0 0 10px white, 0 0 20px white;
+    border-radius: 50% !important;
+    opacity: 0.8 !important;
+}

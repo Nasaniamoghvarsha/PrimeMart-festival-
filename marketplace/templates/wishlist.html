@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Your Wishlist</h2>
+        <a href="{{ url_for('product_bp.store') }}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left"></i> Continue Shopping
+        </a>
+    </div>
+
+    {% if not products %}
+        <div class="text-center py-5">
+            <i class="fas fa-heart-broken fa-4x text-muted mb-3"></i>
+            <h4>Your wishlist is empty</h4>
+            <p class="text-muted">Add items to your wishlist to save them for later</p>
+            <a href="{{ url_for('product_bp.store') }}" class="btn btn-primary mt-3">
+                <i class="fas fa-shopping-bag"></i> Browse Products
+            </a>
+        </div>
+    {% else %}
+        <div class="row">
+            {% for p in products %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    {% if p.get('image_url') %}
+                        <img src="{{ p.image_url }}" class="card-img-top product-image" alt="{{ p.name }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                        <div class="text-center py-5 bg-light">
+                            <i class="fas fa-image fa-4x text-muted"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ p.name }}</h5>
+                        <p class="card-text text-muted">{{ p.get('description', 'No description available') }}</p>
+                        <div class="mt-auto">
+                            <h5 class="text-primary">${{ "%.2f"|format(p.get('price', 0)) }}</h5>
+                            <div class="d-flex justify-content-between mt-3">
+                                <form action="{{ url_for('product_bp.buy_product', product_id=p._id) }}" method="POST" class="d-inline">
+                                    <input type="hidden" name="retailer_id" value="{{ p.retailer_id }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-shopping-cart"></i> Buy Now
+                                    </button>
+                                </form>
+                                <button class="btn btn-sm btn-outline-danger toggle-wishlist" 
+                                        data-product-id="{{ p._id }}" 
+                                        data-action="remove">
+                                    <i class="fas fa-heart"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle wishlist toggle
+    document.querySelectorAll('.toggle-wishlist').forEach(button => {
+        button.addEventListener('click', function() {
+            const productId = this.dataset.productId;
+            const action = this.dataset.action;
+            const icon = this.querySelector('i');
+            
+            fetch(`/wishlist/toggle/${productId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ action: action })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Toggle button state
+                    const newAction = action === 'add' ? 'remove' : 'add';
+                    this.dataset.action = newAction;
+                    
+                    if (newAction === 'remove') {
+                        this.innerHTML = '<i class="fas fa-heart"></i> Remove';
+                        this.classList.remove('btn-outline-secondary');
+                        this.classList.add('btn-outline-danger');
+                        showToast('Added to wishlist');
+                    } else {
+                        // If on wishlist page, remove the card
+                        if (window.location.pathname === '/wishlist') {
+                            this.closest('.col-md-4').remove();
+                            // If no more items, show empty state
+                            if (!document.querySelector('.toggle-wishlist')) {
+                                window.location.reload();
+                            }
+                        } else {
+                            this.innerHTML = '<i class="far fa-heart"></i> Add to Wishlist';
+                            this.classList.remove('btn-outline-danger');
+                            this.classList.add('btn-outline-secondary');
+                        }
+                        showToast('Removed from wishlist');
+                    }
+                } else {
+                    showToast(data.message || 'An error occurred', 'warning');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('An error occurred', 'error');
+            });
+        });
+    });
+});
+
+function showToast(message, type = 'success') {
+    // Create toast element if it doesn't exist
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.style.position = 'fixed';
+        toastContainer.style.top = '20px';
+        toastContainer.style.right = '20px';
+        toastContainer.style.zIndex = '1100';
+        document.body.appendChild(toastContainer);
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} alert-dismissible fade show`;
+    toast.role = 'alert';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 150);
+    }, 3000);
+}
+</script>
+
+<style>
+.product-image {
+    transition: transform 0.3s ease;
+}
+
+.product-image:hover {
+    transform: scale(1.05);
+}
+
+.card {
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.btn-outline-danger {
+    border-color: #dc3545;
+    color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+.alert {
+    min-width: 300px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+</style>
+{% endblock %}

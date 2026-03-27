@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard - Gadget Marketplace</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      background: #f5f7fa;
+    }
+
+    /* Header */
+    header {
+      background: #1a73e8;
+      color: white;
+      padding: 15px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    header nav a {
+      color: white;
+      margin: 0 15px;
+      text-decoration: none;
+      font-weight: 500;
+      transition: opacity 0.3s ease;
+    }
+
+    header nav a:hover {
+      opacity: 0.8;
+    }
+
+    /* Welcome banner */
+    .banner {
+      background: linear-gradient(135deg, #1a73e8, #4cafef);
+      color: white;
+      text-align: center;
+      padding: 50px 20px;
+      border-radius: 0 0 25px 25px;
+    }
+
+    .banner h2 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .banner p {
+      margin-top: 10px;
+      font-size: 16px;
+    }
+
+    /* Gadget cards */
+    .gadgets {
+      padding: 30px;
+    }
+
+    .gadgets h2 {
+      margin-bottom: 20px;
+      color: #333;
+      font-size: 24px;
+    }
+
+    .cards {
+      display: flex;
+      gap: 25px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 20px;
+      text-align: center;
+      width: 260px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    }
+
+    .card img {
+      max-width: 100%;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+
+    .card h3 {
+      margin: 10px 0 5px;
+      font-size: 18px;
+      color: #1a73e8;
+    }
+
+    .card p {
+      font-size: 14px;
+      color: #555;
+      min-height: 40px;
+    }
+
+    .card button {
+      background: #1a73e8;
+      border: none;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+      font-size: 14px;
+      transition: background 0.3s ease;
+    }
+
+    .card button:hover {
+      background: #155ab6;
+    }
+
+    /* Footer */
+    footer {
+      background: #1a73e8;
+      color: white;
+      text-align: center;
+      padding: 15px;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <h1>Gadget Marketplace</h1>
+    <nav>
+      <a href="#">Home</a>
+      <a href="#">Mobiles</a>
+      <a href="#">Laptops</a>
+      <a href="#">Accessories</a>
+      <a href="{{ url_for('auth_bp.logout') }}">Logout</a>
+    </nav>
+  </header>
+
+  <!-- Welcome Banner -->
+  <div class="banner">
+    <h2>Welcome, {{ user }} 👋</h2>
+    <p>Discover the latest and greatest in electronic gadgets.</p>
+  </div>
+
+  <!-- Gadget Section -->
+  <section class="gadgets">
+    <h2>Featured Gadgets</h2>
+    <div class="cards">
+      <div class="card">
+        <img src="https://via.placeholder.com/220x150" alt="Smartphone">
+        <h3>iPhone 15 Pro</h3>
+        <p>Latest Apple smartphone with A17 Bionic chip.</p>
+        <button>View Details</button>
+      </div>
+      <div class="card">
+        <img src="https://via.placeholder.com/220x150" alt="Laptop">
+        <h3>MacBook Pro</h3>
+        <p>Powerful laptop designed for creators and developers.</p>
+        <button>View Details</button>
+      </div>
+      <div class="card">
+        <img src="https://via.placeholder.com/220x150" alt="Headphones">
+        <h3>Sony WH-1000XM5</h3>
+        <p>Noise-cancelling headphones with immersive sound.</p>
+        <button>View Details</button>
+      </div>
+      <div class="card">
+        <img src="https://via.placeholder.com/220x150" alt="Tablet">
+        <h3>Samsung Galaxy Tab S9</h3>
+        <p>High-performance tablet for work and play.</p>
+        <button>View Details</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; 2025 Gadget Marketplace. All rights reserved.</p>
+  </footer>
+</body>
+</html>

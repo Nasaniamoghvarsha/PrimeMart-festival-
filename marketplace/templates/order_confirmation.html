@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="confirmation-container">
+        <div class="confirmation-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h1>Thank You for Your Order!</h1>
+        <p class="order-number">Order #{{ order._id }}</p>
+        
+        <div class="confirmation-details">
+            <p>Your order has been received and is being processed. A confirmation email with your receipt has been sent to <strong>{{ order.email }}</strong>.</p>
+            
+            <div class="order-summary">
+                <h3>Order Summary</h3>
+                <div class="order-items">
+                    {% for item in order.items %}
+                        <div class="order-item">
+                            <div class="item-name">{{ item.name }}</div>
+                            <div class="item-quantity">x {{ item.quantity }}</div>
+                            <div class="item-price">${{ "%.2f"|format(item.price * item.quantity) }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="order-totals">
+                    <div class="total-row">
+                        <span>Subtotal:</span>
+                        <span>${{ "%.2f"|format(order.subtotal) }}</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Tax (10%):</span>
+                        <span>${{ "%.2f"|format(order.tax) }}</span>
+                    </div>
+                    <div class="total-row grand-total">
+                        <span>Total:</span>
+                        <span>${{ "%.2f"|format(order.total) }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="confirmation-actions">
+                <a href="{{ url_for('payment.view_receipt', order_id=order._id) }}" class="btn btn-primary">
+                    <i class="fas fa-receipt"></i> View Receipt
+                </a>
+                <a href="{{ url_for('payment.my_orders') }}" class="btn btn-secondary">
+                    <i class="fas fa-history"></i> Order History
+                </a>
+                <a href="{{ url_for('product.list_products') }}" class="btn btn-outline">
+                    <i class="fas fa-shopping-bag"></i> Continue Shopping
+                </a>
+            </div>
+            
+            <div class="shipping-info">
+                <h4>What's Next?</h4>
+                <div class="shipping-steps">
+                    <div class="step">
+                        <div class="step-icon">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="step-details">
+                            <h5>Order Processed</h5>
+                            <p>We've received your order and are preparing it for shipment.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-icon">
+                            <i class="fas fa-truck"></i>
+                        </div>
+                        <div class="step-details">
+                            <h5>Order Shipped</h5>
+                            <p>Your order is on its way! We'll send you tracking information.</p>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <div class="step-icon">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <div class="step-details">
+                            <h5>Order Delivered</h5>
+                            <p>Your order has been delivered. Enjoy your purchase!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .confirmation-container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+    
+    .confirmation-icon {
+        font-size: 5rem;
+        color: #28a745;
+        margin-bottom: 1.5rem;
+    }
+    
+    .order-number {
+        font-size: 1.2rem;
+        color: #6c757d;
+        margin-bottom: 2rem;
+    }
+    
+    .confirmation-details {
+        text-align: left;
+        margin-top: 2rem;
+    }
+    
+    .order-summary {
+        background: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin: 2rem 0;
+    }
+    
+    .order-items {
+        margin-bottom: 1.5rem;
+    }
+    
+    .order-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .order-item:last-child {
+        border-bottom: none;
+    }
+    
+    .item-name {
+        flex: 2;
+    }
+    
+    .item-quantity {
+        flex: 1;
+        text-align: center;
+    }
+    
+    .item-price {
+        flex: 1;
+        text-align: right;
+        font-weight: 500;
+    }
+    
+    .order-totals {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #eee;
+    }
+    
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+    
+    .grand-total {
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #ddd;
+    }
+    
+    .confirmation-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin: 2rem 0;
+        flex-wrap: wrap;
+    }
+    
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+    
+    .btn i {
+        margin-right: 0.5rem;
+    }
+    
+    .btn-primary {
+        background-color: #8B0000;
+        color: white;
+        border: 1px solid #8B0000;
+    }
+    
+    .btn-primary:hover {
+        background-color: #660000;
+        border-color: #660000;
+    }
+    
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+        border: 1px solid #6c757d;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        border-color: #545b62;
+    }
+    
+    .btn-outline {
+        background-color: transparent;
+        color: #8B0000;
+        border: 1px solid #8B0000;
+    }
+    
+    .btn-outline:hover {
+        background-color: rgba(139, 0, 0, 0.1);
+    }
+    
+    .shipping-info {
+        margin-top: 3rem;
+    }
+    
+    .shipping-steps {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+    
+    .step {
+        flex: 1;
+        min-width: 200px;
+        display: flex;
+        gap: 1rem;
+        text-align: left;
+    }
+    
+    .step-icon {
+        font-size: 1.5rem;
+        color: #8B0000;
+        background: rgba(139, 0, 0, 0.1);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .step-details h5 {
+        margin: 0 0 0.25rem 0;
+        font-size: 1rem;
+    }
+    
+    .step-details p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    @media (max-width: 768px) {
+        .confirmation-container {
+            padding: 1rem;
+            margin: 1rem;
+        }
+        
+        .confirmation-actions {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .btn {
+            width: 100%;
+        }
+        
+        .shipping-steps {
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        
+        .step {
+            width: 100%;
+        }
+    }
+</style>
+
+<script>
+    // Trigger Santa's celebration when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if Santa is available in the page
+        if (typeof santaAction === 'function') {
+            santaAction({
+                text: 'Ho ho ho! Thank you for your order! 🎉',
+                duration: 5000,
+                action: 'celebrate'
+            });
+            
+            // Make Santa dance after a short delay
+            setTimeout(() => {
+                if (typeof santaAction === 'function') {
+                    santaAction({
+                        text: 'Your order is on its way! 🎁',
+                        duration: 4000,
+                        action: 'dance'
+                    });
+                }
+            }, 1000);
+        }
+    });
+</script>
+{% endblock %}

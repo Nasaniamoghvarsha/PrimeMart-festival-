@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrimeMart - Your Electronics Marketplace</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(to bottom, #050817, #0f0a2e);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Night Sky with Stars */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 1s infinite alternate;
+        }
+
+        @keyframes twinkle {
+            from { opacity: 0.3; }
+            to { opacity: 1; }
+        }
+
+        /* Moon - 20% larger */
+        .moon {
+            position: fixed;
+            width: 240px; /* Increased by 20% */
+            height: 240px; /* Increased by 20% */
+            background: #f5f5dc;
+            border-radius: 50%;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 100px 50px rgba(245, 245, 220, 0.4);
+            z-index: 1;
+            background: radial-gradient(circle at 30% 30%, #fff, #f5f5dc 40%, #e6e6d0 70%, #d4d4c0);
+        }
+
+        /* Santa and Reindeer */
+        .santa-ride-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Moon - 20% larger */
+        .moon {
+            position: fixed;
+            width: 240px; /* Increased by 20% */
+            height: 240px; /* Increased by 20% */
+            background: #f5f5dc;
+            border-radius: 50%;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 100px 50px rgba(245, 245, 220, 0.4);
+            z-index: 1;
+            background: radial-gradient(circle at 30% 30%, #fff, #f5f5dc 40%, #e6e6d0 70%, #d4d4c0);
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes wheelSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .santa-cart {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        /* Santa and Reindeer SVG */
+        .santa-reindeer {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        }
+        
+        /* Style for the black silhouette */
+        /* Tree decorations */
+        .tree-top::after, 
+        .tree-middle::after, 
+        .tree-bottom::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 30%, transparent 50%, rgba(255, 255, 255, 0.1) 50.1%, transparent 70%);
+            border-radius: inherit;
+            pointer-events: none;
+        }
+
+        .gift {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background: #000;
+            border-radius: 3px;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.4);
+            z-index: 3;
+            animation: fallingGift 5s linear forwards;
+            border: 1px solid #333;
+        }
+
+        @keyframes fallingGift {
+            0% { 
+                transform: translateY(0) rotate(0deg) scale(1); 
+                opacity: 1; 
+                filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.4));
+            }
+            100% { 
+                transform: translateY(100vh) rotate(360deg) scale(0.8); 
+                opacity: 0; 
+                filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.2));
+            }
+        }
+
+        .cart {
+            position: absolute;
+            width: 200px;
+            height: 100px;
+            bottom: 0;
+            left: 50px;
+        }
+
+        .wheel {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: #333;
+            border-radius: 50%;
+            bottom: 0;
+            animation: wheelSpin 1s linear infinite;
+            border: 3px solid #666;
+        }
+
+        .wheel-1 { left: 30px; }
+        .wheel-2 { right: 30px; }
+
+        .gift {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 5px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .gift-1 { 
+            background: #e74c3c; 
+            bottom: 40px;
+            left: 40px;
+            animation: bounce 0.8s ease-in-out infinite;
+            animation-delay: 0.2s;
+        }
+
+        .gift-2 { 
+            background: #3498db; 
+            bottom: 45px;
+            left: 80px;
+            animation: bounce 0.9s ease-in-out infinite;
+        }
+
+        @keyframes snowFall {
+            0% { transform: translateY(-50px) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+
+        .snowflake {
+            position: absolute;
+            color: white;
+            font-size: 20px;
+            animation: snowFall 10s linear infinite;
+            opacity: 0.7;
+            z-index: 1;
+        }
+
+        /* Navigation bar */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 50px;
+            background: rgba(15, 74, 163, 0.8);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+
+        nav .logo {
+            font-size: 1.8em;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        nav .logo:hover {
+            transform: scale(1.08);
+        }
+
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: 600;
+            transition: 0.2s ease-in-out;
+            padding: 8px 15px;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        nav a:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Hero section */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: calc(100vh - 80px);
+            padding: 0 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .hero p {
+            font-size: 1.3em;
+            margin-bottom: 40px;
+            max-width: 600px;
+            opacity: 0.9;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .btn {
+            background-color: #fdd835;
+            color: #000;
+            padding: 15px 35px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(253, 216, 53, 0.4);
+            animation: fadeInUp 1s ease-out 0.6s both;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(253, 216, 53, 0.6);
+            background-color: #ffeb3b;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        footer {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            color: #ccc;
+            font-size: 0.9em;
+            z-index: 3;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.2em;
+            }
+            .hero p {
+                font-size: 1em;
+            }
+            .santa-ride {
+                transform: scale(0.7);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Starry Night Sky -->
+    <div class="stars" id="stars"></div>
+    
+    <!-- Moon -->
+    <div class="moon"></div>
+
+
+    <nav>
+        <div class="logo">🎅 PrimeMart</div>
+        <div class="nav-links">
+            <a href="{{ url_for('auth_bp.login') }}">🔐 Login</a>
+            <a href="{{ url_for('auth_bp.signup') }}">✍️ Sign Up</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>Welcome to PrimeMart</h1>
+        <p>Your one-stop marketplace for all electronics. Explore top gadgets, latest tech, and amazing deals!</p>
+        <a href="{{ url_for('auth_bp.signup') }}" class="btn">Get Started</a>
+    </section>
+
+    <footer>
+        &copy; 2023 PrimeMart. All rights reserved.
+    </footer>
+
+    <script>
+        // Create stars for the night sky
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starsCount = 100;
+            
+            for (let i = 0; i < starsCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                // Random position
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                
+                // Random size between 1px and 3px
+                const size = Math.random() * 2 + 1;
+                
+                // Random animation delay
+                const delay = Math.random() * 2;
+                
+                // Apply styles
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.animationDelay = `${delay}s`;
+                
+                starsContainer.appendChild(star);
+            }
+        }
+        
+        // Create falling gifts
+        function createFallingGift() {
+            const gift = document.createElement('div');
+            gift.className = 'gift';
+            
+            // Random position along the x-axis
+            const x = Math.random() * 100;
+            
+            // Random size
+            const size = Math.random() * 20 + 15;
+            
+            // Random color
+            const colors = ['#e74c3c', '#3498db', '#2ecc71', '#f1c40f', '#9b59b6'];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            
+            // Apply styles
+            gift.style.left = `${x}%`;
+            gift.style.top = '-30px';
+            gift.style.width = `${size}px`;
+            gift.style.height = `${size}px`;
+            gift.style.background = color;
+            gift.style.animationDuration = `${Math.random() * 3 + 3}s`;
+            
+            // Add gift to the container
+            document.body.appendChild(gift);
+            
+            // Remove gift after animation completes
+            setTimeout(() => {
+                gift.remove();
+            }, 5000);
+        }
+        
+        // Initialize the animations when the page loads
+        window.addEventListener('load', () => {
+            createStars();
+            
+            // Create a new falling gift every 500ms
+            setInterval(createFallingGift, 500);
+            
+            // Start Santa's ride
+            const santaRide = document.getElementById('santaRide');
+            santaRide.style.animation = 'santaRide 30s linear infinite';
+        });
+    </script>
+</body>
+</html>

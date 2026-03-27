@@ -1,0 +1,2230 @@
+<!DOCTYPE html>
+<html lang="en" class="christmas-theme">
+<head>
+  <!-- Meta Tags -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  
+  <!-- Title -->
+  <title>PrimeMart - {{ title if title else 'Marketplace' }}</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}" type="image/x-icon">
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&family=Mountains+of+Christmas:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+
+  <style>
+    /* Video Background */
+    .video-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+    
+    .video-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: -1;
+    }
+    
+    .content-wrapper {
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* Santa Speech Bubble */
+    .santa-speech {
+      position: fixed;
+      background: white;
+      padding: 8px 12px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      z-index: 1001;
+      font-size: 14px;
+      max-width: 200px;
+      text-align: center;
+      display: none;
+      animation: bounce 0.5s ease-out;
+    }
+
+    .santa-speech::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 20px;
+      border-width: 10px 10px 0;
+      border-style: solid;
+      border-color: white transparent;
+    }
+
+    @keyframes bounce {
+      0% { transform: scale(0.8); opacity: 0; }
+      70% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Christmas Decorations */
+    .decorations {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1000;
+      overflow: hidden;
+    }
+    
+    .decoration {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      opacity: 0.9;
+      animation: float 6s ease-in-out infinite;
+      z-index: 1;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+    
+    .decoration.tree {
+      width: 50px;
+      height: 60px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 60'%3E%3Cpath d='M20 0 L25 10 L30 10 L26 18 L30 26 L20 22 L10 26 L14 18 L10 10 L15 10 Z' fill='%232E7D32'/%3E%3Crect x='18' y='26' width='4' height='10' fill='%238B4513'/%3E%3Ccircle cx='20' cy='15' r='2' fill='%23FFD700'/%3E%3C/svg%3E");
+    }
+    
+    .decoration.gift {
+      width: 45px;
+      height: 45px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 45 45'%3E%3Crect x='5' y='10' width='35' height='25' rx='2' fill='%23C62828'/%3E%3Crect x='5' y='25' width='35' height='15' fill='%23D32F2F'/%3E%3Crect x='20' y='10' width='5' height='30' fill='%23FFD700'/%3E%3Crect x='5' y='25' width='35' height='5' fill='%23FFD700'/%3E%3C/svg%3E");
+    }
+    
+    .decoration.ornament {
+      width: 30px;
+      height: 40px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 40'%3E%3Cpath d='M15 0 C10 0 5 5 5 15 C5 20 15 35 15 35 C15 35 25 20 25 15 C25 5 20 0 15 0 Z' fill='%23FFD700'/%3E%3Ccircle cx='15' cy='10' r='3' fill='%23C62828'/%3E%3Crect x='14' y='35' width='2' height='5' fill='%239E9E9E'/%3E%3C/svg%3E");
+    }
+    
+    .decoration.star {
+      width: 30px;
+      height: 30px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath d='M15 0 L18 11 L30 11 L21 18 L24 30 L15 23 L6 30 L9 18 L0 11 L12 11 Z' fill='%23FFD700'/%3E%3C/svg%3E");
+    }
+    
+    .decoration.candycane {
+      width: 15px;
+      height: 40px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 40'%3E%3Cpath d='M5 0 L10 0 C10 0 15 2 15 7 C15 12 10 15 10 15 L5 15 C5 15 0 18 0 23 C0 28 5 30 5 30 L5 40 L0 40 L0 0 Z' fill='%23C62828'/%3E%3Cpath d='M5 2 L8 2 C8 2 12 4 12 7 C12 10 8 12 8 12 L5 12 Z' fill='white'/%3E%3Cpath d='M5 17 L8 17 C8 17 12 19 12 22 C12 25 8 27 8 27 L5 27 Z' fill='white'/%3E%3C/svg%3E");
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-15px) rotate(3deg); }
+    }
+    
+    @keyframes swing {
+      0%, 100% { transform: rotate(-5deg); }
+      50% { transform: rotate(5deg); }
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    
+    /* Make decorations smaller on mobile */
+    @media (max-width: 768px) {
+      .decoration {
+        transform: scale(0.7);
+      }
+      .decoration.tree { width: 40px; height: 48px; }
+      .decoration.gift { width: 36px; height: 36px; }
+      .decoration.ornament { width: 24px; height: 32px; }
+      .decoration.star { width: 24px; height: 24px; }
+      .decoration.candycane { width: 12px; height: 32px; }
+    }
+
+    /* Red and Warm White Color Variables */
+    :root {
+      --primary: #8B0000;
+      --primary-dark: #660000;
+      --secondary: #8B0000;
+      --accent: #FFF5F5;
+      --accent-light: #FFEEEE;
+      --accent-dark: #FFE0E0;
+      --light: #FFF9F9;
+      --dark: #1A1A1A;
+      --success: #2E7D32;
+      --danger: #8B0000;
+      --warning: #F9A825;
+      --info: #0288D1;
+      --header-bg: linear-gradient(
+        135deg,
+        #8B0000 0%,
+        #660000 25%,
+        #660000 50%,
+        #8B0000 75%,
+        #660000 100%
+      );
+      --header-border: 3px solid #FFFFFF;
+      --accent-gradient: linear-gradient(
+        135deg,
+        #FFFFFF 0%,
+        #F5F5F5 50%,
+        #E0E0E0 100%
+      );
+      --accent-glow: 0 0 15px rgba(255, 255, 255, 0.6);
+    }
+
+    /* Base Styles */
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--light);
+      color: #333;
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header Styles */
+    header {
+      background: var(--header-bg);
+      color: white;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      border-bottom: var(--header-border);
+    }
+
+    .nav-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0.8rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-family: 'Mountains of Christmas', cursive;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: white;
+      text-decoration: none;
+      position: relative;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+    }
+
+    .logo span {
+      background: var(--golden-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      background-size: 200% 200%;
+      animation: gradientShift 3s ease infinite;
+      font-weight: 800;
+      text-shadow: none;
+    }
+
+    /* Navigation */
+    nav {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    nav a:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-2px);
+    }
+    
+    .nav-right {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      border: none;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+
+    .btn-primary {
+      background: var(--golden-gradient);
+      background-size: 200% 200%;
+      color: #8B4513;
+      border: none;
+      font-weight: 700;
+      text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px) scale(1.03);
+      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
+      animation: gradientShift 3s ease infinite;
+    }
+    
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.2) 0%,
+        rgba(255, 255, 255, 0.4) 50%,
+        rgba(255, 255, 255, 0.2) 100%
+      );
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+      z-index: -1;
+    }
+    
+    .btn-primary:hover::before {
+      transform: translateX(100%);
+    }
+    
+    .btn-outline {
+      background: transparent;
+      color: white;
+      border-color: white;
+    }
+    
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+    /* Profile Dropdown */
+    /* Profile Menu Styles */
+    .profile-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .profile-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.95rem;
+      cursor: pointer;
+      padding: 0.6rem 1rem;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .profile-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      margin-top: 0.5rem;
+      background: white;
+      min-width: 220px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+      z-index: 9999;
+    }
+    
+    .profile-dropdown.active .dropdown-content {
+      display: block;
+    }
+    
+    .dropdown-content a {
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: #333;
+      text-decoration: none;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .dropdown-content a:last-child {
+      border-bottom: none;
+    }
+    
+    .dropdown-content a:hover {
+      background: #f8f9fa;
+      color: #8B0000;
+    }
+    
+    .dropdown-content a i {
+      width: 20px;
+      text-align: center;
+      color: #8B0000;
+    }
+    
+    .dropdown-content a {
+      color: #333;
+      padding: 0.75rem 1.25rem;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.2s ease;
+      font-size: 0.95rem;
+      color: #444;
+      cursor: pointer;
+    }
+    
+    .dropdown-content a i {
+      width: 20px;
+      text-align: center;
+      color: var(--primary);
+    }
+    
+    .dropdown-content a:hover {
+      background: #f8f9fa;
+      padding-left: 1.5rem;
+      color: var(--primary-dark);
+    }
+    
+    .dropdown-content .divider {
+      height: 1px;
+      background: #eee;
+      margin: 0.25rem 0;
+    }
+    
+    /* Badge */
+    .badge {
+      background: var(--golden-gradient);
+      background-size: 200% 200%;
+      color: #8B4513;
+      border-radius: 10px;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      position: relative;
+      top: -2px;
+      margin-left: 2px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      animation: gradientShift 3s ease infinite;
+      text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    /* Flash Messages */
+    .flash-messages {
+      max-width: 800px;
+      margin: 1.5rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .flash {
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-weight: 500;
+      animation: fadeIn 0.4s ease-in;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border-left: 4px solid transparent;
+    }
+
+    .flash i {
+      font-size: 1.25rem;
+    }
+
+    .flash.success {
+      background: rgba(34, 197, 94, 0.1);
+      border-left-color: #22c55e;
+      color: #166534;
+    }
+
+    .flash.error {
+      background: rgba(239, 68, 68, 0.1);
+      border-left-color: #ef4444;
+      color: #991b1b;
+    }
+
+    .flash.warning {
+      background: rgba(245, 158, 11, 0.1);
+      border-left-color: #f59e0b;
+      color: #92400e;
+    }
+    
+    /* Main Content */
+    main {
+      flex: 1;
+      padding: 2rem 1rem;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    
+    /* Footer */
+    footer {
+      background: var(--xmas-dark-green);
+      color: white;
+      text-align: center;
+      padding: 2rem 1rem;
+      margin-top: 3rem;
+      border-top: 3px solid var(--xmas-gold);
+    }
+    
+    footer p {
+      margin: 0.5rem 0;
+      font-size: 0.9rem;
+    }
+    
+    /* Christmas Footer Styles */
+    .christmas-footer {
+      background: linear-gradient(145deg, #1a472a, #0d2d1a);
+      color: #fff;
+      padding: 2.5rem 0;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      margin-top: 3rem;
+    }
+    
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .festive-message {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      color: #fff;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .festive-message .icon {
+      font-size: 2rem;
+      animation: bounce 2s infinite;
+    }
+    
+    .copyright {
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+    }
+    
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 0.5rem 1rem;
+      margin-top: 1.5rem;
+    }
+    
+    .footer-link {
+      color: #a3e635;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+    
+    .footer-link:hover {
+      color: #fff;
+      text-decoration: underline;
+    }
+    
+    .divider {
+      color: rgba(255, 255, 255, 0.3);
+      user-select: none;
+    }
+    
+    /* Snowflakes Animation */
+    .snowflakes {
+      position: absolute;
+      top: -20px;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .snowflake {
+      position: absolute;
+      color: #fff;
+      font-size: 1.5rem;
+      opacity: 0.7;
+      animation: snowfall linear infinite;
+      z-index: 0;
+    }
+    
+    .snowflake:nth-child(1) {
+      left: 10%;
+      animation-duration: 10s;
+      animation-delay: 0s;
+    }
+    
+    .snowflake:nth-child(2) {
+      left: 50%;
+      animation-duration: 12s;
+      animation-delay: 2s;
+    }
+    
+    .snowflake:nth-child(3) {
+      left: 80%;
+      animation-duration: 15s;
+      animation-delay: 4s;
+    }
+    
+    /* Snowfall Animation */
+    @keyframes snowfall {
+      0% {
+        transform: translateY(-100vh);
+      }
+      100% {
+        transform: translateY(100vh);
+      }
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes gradientShift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .nav-wrap {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+      }
+      
+      nav {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .dropdown-content {
+        right: 50%;
+        transform: translate(50%, -10px);
+      }
+      
+      .dropdown-content.visible {
+        transform: translate(50%, 0);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="nav-wrap">
+      <a href="{{ url_for('home') }}" class="logo">🎄PrimeMart</a>
+
+      <nav>
+        <a href="{{ url_for('home') }}"><i class="fas fa-home"></i> Home</a>
+
+        {% if session.get('user') %}
+          {% if session['user'].get('role') == 'retailer' %}
+            <a href="{{ url_for('product_bp.retailer_dashboard') }}"><i class="fas fa-store"></i> Retailer Dashboard</a>
+          {% else %}
+            <a href="{{ url_for('product_bp.store') }}"><i class="fas fa-shopping-cart"></i> Store</a>
+            <a href="{{ url_for('product_bp.cart_view') }}">
+              <i class="fas fa-shopping-bag"></i> Cart
+              {% if cart_count is defined and cart_count %}
+                <span class="badge">{{ cart_count }}</span>
+              {% endif %}
+            </a>
+          {% endif %}
+        {% else %}
+          <a href="{{ url_for('product_bp.store') }}"><i class="fas fa-shopping-cart"></i> Store</a>
+        {% endif %}
+      </nav>
+
+      <div class="nav-right">
+        {% if session.get('user') %}
+          <div class="profile-dropdown" id="profileDropdown">
+            <button class="profile-btn" type="button" id="profileButton">
+              <i class="fas fa-user"></i>
+              {{ session['user'].get('name','User') }}
+              <i class="fas fa-chevron-down" style="font-size: 0.8rem; margin-left: 0.5rem;"></i>
+            </button>
+            <div class="dropdown-content" id="profileMenu">
+              <a href="{{ url_for('product_bp.profile') }}">
+                <i class="fas fa-user-circle"></i> My Profile
+              </a>
+              <a href="{{ url_for('product_bp.orders') }}">
+                <i class="fas fa-box"></i> My Orders
+              </a>
+              <a href="{{ url_for('auth_bp.logout') }}" style="color: #ef4444;">
+                <i class="fas fa-sign-out-alt"></i> Logout
+              </a>
+            </div>
+          </div>
+
+          <script>
+            // Debug profile dropdown functionality
+            document.addEventListener('DOMContentLoaded', function() {
+              const dropdown = document.getElementById('profileDropdown');
+              const button = document.getElementById('profileButton');
+              const menu = document.getElementById('profileMenu');
+              
+              console.log('Debug: Found elements', {
+                dropdown: dropdown,
+                button: button,
+                menu: menu
+              });
+
+              if (!dropdown || !button || !menu) {
+                console.error('Debug: Missing required elements');
+                return;
+              }
+
+              button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Debug: Button clicked');
+                dropdown.classList.toggle('active');
+              });
+
+              // Close when clicking outside
+              document.addEventListener('click', function(e) {
+                if (!dropdown.contains(e.target)) {
+                  console.log('Debug: Clicked outside, closing');
+                  dropdown.classList.remove('active');
+                }
+              });
+
+              // For debugging
+              const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                  if (mutation.attributeName === 'class') {
+                    console.log('Debug: Dropdown classes changed to:', dropdown.className);
+                  }
+                });
+              });
+
+              observer.observe(dropdown, { attributes: true });
+            });
+          </script>
+        {% else %}
+          <a class="btn btn-outline" href="{{ url_for('auth_bp.login') }}">
+            <i class="fas fa-sign-in-alt"></i> Login
+          </a>
+          <a class="btn btn-outline" href="{{ url_for('auth_bp.signup') }}">
+            <i class="fas fa-user-plus"></i> Sign Up
+          </a>
+          <a class="btn btn-outline" href="{{ url_for('auth_bp.retailer_login') }}">
+            <i class="fas fa-store"></i> Retailer
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">
+              {% if category == 'success' %}
+                <i class="fas fa-check-circle"></i>
+              {% elif category == 'error' %}
+                <i class="fas fa-exclamation-circle"></i>
+              {% else %}
+                <i class="fas fa-info-circle"></i>
+              {% endif %}
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="christmas-footer">
+    <div class="footer-content">
+      <div class="snowflakes">
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❅</div>
+        <div class="snowflake">❆</div>
+      </div>
+      <p class="festive-message">
+        <span class="icon">🎄</span>
+        <span>Merry Christmas & Happy Holidays!</span>
+        <span class="icon">🎅</span>
+      </p>
+      <p class="copyright">© 2023 PrimeMart. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="#" class="footer-link">About Us</a>
+        <span class="divider">•</span>
+        <a href="#" class="footer-link">Contact</a>
+        <span class="divider">•</span>
+        <a href="#" class="footer-link">Privacy Policy</a>
+        <span class="divider">•</span>
+        <a href="#" class="footer-link">Terms of Service</a>
+      </div>
+    </div>
+  </footer>
+  
+  <!-- Santa Character -->
+  <!-- Santa Character -->
+  <div id="santa-container" class="santa-character fixed bottom-2 right-2 z-50" style="width: 144px; height: 144px;">
+    <svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-2xl">
+      <!-- Santa SVG will be inserted here by JavaScript -->
+    </svg>
+    <div class="santa-speech"></div>
+  </div>
+
+  <style>
+    /* Enhanced Santa Character Styles */
+    .santa-character {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 144px;
+      height: 200px;
+      z-index: 1000;
+      cursor: pointer;
+      transform-origin: bottom center;
+      animation: float 4s ease-in-out infinite;
+      filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2));
+      transition: all 0.3s ease;
+    }
+    
+    .santa-character:hover {
+      transform: scale(1.05);
+      filter: drop-shadow(0 8px 15px rgba(0,0,0,0.3));
+    }
+    
+    .santa-body {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .head {
+      position: absolute;
+      width: 100px;
+      height: 120px;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+    }
+    
+    .face {
+      position: absolute;
+      width: 90px;
+      height: 100px;
+      background: #FFD1AA;
+      border-radius: 50% 50% 45% 45%;
+      top: 20px;
+      left: 5px;
+      overflow: hidden;
+      box-shadow: inset -5px -5px 10px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .eyes {
+      position: absolute;
+      top: 35px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      z-index: 10;
+    }
+    
+    .eye {
+      width: 12px;
+      height: 12px;
+      background: #1a1a1a;
+      border-radius: 50%;
+      position: relative;
+      animation: blink 8s infinite;
+      overflow: hidden;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    }
+    
+    .eye::before {
+      content: '';
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      background: white;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+      opacity: 0.8;
+    }
+    
+    .eye::after {
+      content: '';
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: white;
+      border-radius: 50%;
+      top: 1px;
+      left: 1px;
+      opacity: 0.5;
+    }
+    
+    .cheeks {
+      position: absolute;
+      width: 100%;
+      top: 40px;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 15px;
+      box-sizing: border-box;
+    }
+    
+    .cheek {
+      width: 15px;
+      height: 10px;
+      background: #FF9E7D;
+      border-radius: 50%;
+      opacity: 0.7;
+    }
+    
+    .mouth {
+      position: absolute;
+      width: 40px;
+      height: 20px;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .smile {
+      width: 100%;
+      height: 30px;
+      border: 3px solid #000;
+      border-color: transparent transparent #000 transparent;
+      border-radius: 0 0 30px 30px;
+      position: absolute;
+      top: 0;
+      animation: smile 8s infinite;
+      background: rgba(255, 0, 0, 0.2);
+      transition: all 0.3s ease;
+    }
+    
+    .santa-character.talking .smile {
+      animation: talk 0.2s infinite alternate;
+      height: 10px;
+      border-radius: 10px;
+    }
+    
+    .beard {
+      position: absolute;
+      width: 100px;
+      height: 80px;
+      background: #fff;
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      top: 50px;
+      left: 0;
+      z-index: 2;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    
+    .beard::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 50%);
+      border-radius: inherit;
+    }
+    
+    .hat {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 4;
+    }
+    
+    .hat-top {
+      position: absolute;
+      width: 90px;
+      height: 70px;
+      background: #C00;
+      border-radius: 50% 50% 0 0;
+      top: -5px;
+      left: 5px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      z-index: 5;
+    }
+    
+    .hat-brim {
+      position: absolute;
+      width: 110px;
+      height: 15px;
+      background: #A00;
+      border-radius: 5px;
+      top: 55px;
+      left: -5px;
+      box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+      z-index: 4;
+    }
+    
+    .hat-brim::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 5px;
+      background: rgba(255,255,255,0.2);
+      top: 2px;
+      left: 0;
+      border-radius: 5px;
+    }
+    
+    .hat-ball {
+      position: absolute;
+      width: 25px;
+      height: 25px;
+      background: white;
+      border-radius: 50%;
+      top: 5px;
+      right: 10px;
+      z-index: 6;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      animation: glow 2s infinite alternate;
+    }
+    
+    .hat-ball::before {
+      content: '';
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background: rgba(255,255,255,0.8);
+      border-radius: 50%;
+      top: 5px;
+      left: 5px;
+    }
+    
+    .torso {
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      background: #C00;
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      top: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+    }
+    
+    .arm {
+      position: absolute;
+      width: 20px;
+      height: 80px;
+      background: #C00;
+      top: 110px;
+      z-index: 1;
+    }
+    
+    .arm.left {
+      left: 20px;
+      transform: rotate(20deg);
+      transform-origin: top center;
+      animation: waveLeft 3s infinite;
+    }
+    
+    .arm.right {
+      right: 20px;
+      transform: rotate(-20deg);
+      transform-origin: top center;
+      animation: waveRight 3s infinite 1.5s;
+    }
+    
+    .hand {
+      position: absolute;
+      width: 25px;
+      height: 25px;
+      background: #C00;
+      border-radius: 50%;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    
+    .glove {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      border-radius: 50%;
+      top: 0;
+      left: 0;
+    }
+    
+    .bell {
+      position: absolute;
+      font-size: 16px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(20deg);
+      animation: ring 0.5s infinite alternate;
+    }
+    
+    .belt {
+      position: absolute;
+      width: 100%;
+      height: 20px;
+      background: #000;
+      bottom: 30px;
+      left: 0;
+    }
+    
+    .buckle {
+      position: absolute;
+      width: 30px;
+      height: 20px;
+      background: #FFD700;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    
+    .legs {
+      position: absolute;
+      width: 100px;
+      height: 60px;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1;
+    }
+    
+    .leg {
+      position: absolute;
+      width: 30px;
+      height: 50px;
+      background: #C00;
+      bottom: 0;
+    }
+    
+    .leg.left {
+      left: 10px;
+      transform: rotate(-5deg);
+    }
+    
+    .leg.right {
+      right: 10px;
+      transform: rotate(5deg);
+    }
+    
+    .boots {
+      position: absolute;
+      width: 100px;
+      height: 30px;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 0;
+    }
+    
+    .boot {
+      position: absolute;
+      width: 40px;
+      height: 30px;
+      background: #000;
+      border-radius: 0 0 10px 10px;
+      bottom: 0;
+    }
+    
+    .boot.left {
+      left: 5px;
+      transform: rotate(-5deg);
+    }
+    
+    .boot.right {
+      right: 5px;
+      transform: rotate(5deg);
+    }
+    
+    .santa-speech {
+      position: absolute;
+      background: white;
+      padding: 10px 15px;
+      border-radius: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      top: -50px;
+      left: 50%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      font-family: 'Mountains of Christmas', cursive;
+      font-size: 18px;
+      color: #C00;
+      opacity: 0;
+      animation: speak 5s infinite 2s;
+    }
+    
+    .santa-speech::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 10px 10px 0;
+      border-style: solid;
+      border-color: white transparent;
+    }
+    
+    /* Animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes waveLeft {
+      0%, 100% { transform: rotate(20deg); }
+      50% { transform: rotate(40deg); }
+    }
+    
+    @keyframes waveRight {
+      0%, 100% { transform: rotate(0deg) translate(0, 0); }
+      25% { transform: rotate(-20deg) translate(-5px, -15px); }
+      50% { transform: rotate(0deg) translate(0, 0); }
+      75% { transform: rotate(20deg) translate(5px, -15px); }
+    }
+    
+    @keyframes wink {
+      0%, 100% { height: 12px; transform: translateY(0); }
+      50% { height: 2px; transform: translateY(5px); }
+    }
+    
+    @keyframes look-around {
+      0%, 100% { transform: translate(0, 0); }
+      25% { transform: translate(2px, -2px); }
+      50% { transform: translate(-2px, 2px); }
+      75% { transform: translate(2px, 2px); }
+    }
+    
+    @keyframes nod {
+      0%, 100% { transform: translateY(0) rotate(0); }
+      50% { transform: translateY(5px) rotate(2deg); }
+    }
+    
+    @keyframes shiver {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-3px); }
+      75% { transform: translateX(3px); }
+    }
+    
+    @keyframes ring {
+      0%, 100% { transform: translate(-50%, -50%) rotate(-10deg); }
+      50% { transform: translate(-50%, -50%) rotate(10deg); }
+    }
+    
+    @keyframes blink {
+      0%, 96%, 98%, 100% { height: 12px; transform: translateY(0); }
+      97% { height: 2px; transform: translateY(5px); }
+    }
+    
+    @keyframes smile {
+      0%, 100% { border-radius: 0 0 30px 30px; height: 15px; }
+      50% { border-radius: 0 0 20px 20px; height: 10px; }
+    }
+    
+    /* Action classes */
+    .santa-character.wave .arm.left {
+      animation: wave 1s ease-in-out infinite;
+    }
+    
+    .santa-character.laugh .mouth .smile {
+      animation: laugh 0.5s infinite alternate;
+    }
+    
+    .santa-character.shiver {
+      animation: shiver 0.2s infinite;
+    }
+    
+    .santa-character.write .arm.right {
+      animation: write 2s ease-in-out infinite;
+    }
+    
+    .santa-character.sip .arm.left {
+      animation: sip 3s ease-in-out infinite;
+    }
+    
+    @keyframes wave {
+      0%, 100% { transform: rotate(0deg) translate(0, 0); }
+      25% { transform: rotate(-20deg) translate(-5px, -15px); }
+      50% { transform: rotate(0deg) translate(0, 0); }
+      75% { transform: rotate(20deg) translate(5px, -15px); }
+    }
+    
+    @keyframes laugh {
+      0% { transform: translateY(0) scale(1) rotate(0deg); }
+      15% { transform: translateY(-5px) scale(1.03) rotate(-2deg); }
+      30% { transform: translateY(0) scale(1) rotate(2deg); }
+      45% { transform: translateY(-3px) scale(1.02) rotate(-1deg); }
+      60% { transform: translateY(0) scale(1) rotate(1deg); }
+      75% { transform: translateY(-2px) scale(1.01) rotate(-0.5deg); }
+      100% { transform: translateY(0) scale(1) rotate(0deg); }
+    }
+    
+    @keyframes write {
+      0%, 100% { transform: rotate(-20deg); }
+      50% { transform: rotate(-40deg) translateX(10px); }
+    }
+    
+    @keyframes sip {
+      0%, 100% { transform: rotate(20deg); }
+      50% { transform: rotate(45deg) translateY(-20px); }
+    }
+    
+    @keyframes speak {
+      0%, 40%, 100% { opacity: 0; transform: translate(-50%, 10px); }
+      5%, 35% { opacity: 1; transform: translate(-50%, 0); }
+    }
+    
+    .santa-container {
+      position: fixed;
+      z-index: 1000;
+      pointer-events: none;
+      transition: all 0.3s ease;
+    }
+    }
+
+    /* Santa */
+    .santa {
+      bottom: 20px;
+      left: 20px;
+      width: 100px;
+      height: 120px;
+    }
+
+    .santa-face {
+      width: 80px;
+      height: 80px;
+      background: #FFD1AA;
+      border-radius: 50%;
+      position: relative;
+      margin: 0 auto;
+    }
+
+    .santa-hat {
+      width: 0;
+      height: 0;
+      border-left: 40px solid transparent;
+      border-right: 40px solid transparent;
+      border-bottom: 40px solid #C00;
+      position: absolute;
+      top: -20px;
+      left: 0;
+    }
+
+    .santa-hat::after {
+      content: '';
+      position: absolute;
+      bottom: -60px;
+      left: -30px;
+      width: 60px;
+      height: 20px;
+      background: #C00;
+      border-radius: 10px;
+    }
+
+    .santa-beard {
+      width: 70px;
+      height: 60px;
+      background: #FFF;
+      border-radius: 50%;
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .eyes {
+      position: absolute;
+      top: 30px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .eye {
+      width: 10px;
+      height: 10px;
+      background: #000;
+      border-radius: 50%;
+      position: relative;
+    }
+
+    .eye::after {
+      content: '';
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: #FFF;
+      border-radius: 50%;
+      top: 2px;
+      left: 2px;
+    }
+
+    .mouth {
+      width: 20px;
+      height: 10px;
+      border-bottom: 2px solid #000;
+      border-radius: 0 0 10px 10px;
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    /* Snowman */
+    .snowman {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 100px;
+      z-index: 1000;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .snowman-head {
+      width: 60px;
+      height: 60px;
+      background: #FFF;
+      border-radius: 50%;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .snowman-body {
+      width: 80px;
+      height: 80px;
+      background: #FFF;
+      border-radius: 50%;
+      margin: -10px auto 0;
+      position: relative;
+    }
+
+    .top-hat {
+      width: 40px;
+      height: 20px;
+      background: #000;
+      position: absolute;
+      top: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .top-hat::after {
+      content: '';
+      position: absolute;
+      width: 50px;
+      height: 5px;
+      background: #000;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .carrot-nose {
+      width: 10px;
+      height: 8px;
+      background: #FF8C00;
+      border-radius: 50%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(5px, -4px);
+    }
+
+    .snowman .eyes {
+      top: 20px;
+    }
+
+    .snowman .eye {
+      width: 8px;
+      height: 8px;
+      background: #000;
+      border-radius: 50%;
+    }
+
+    .buttons {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .buttons::before,
+    .buttons::after {
+      content: '';
+      width: 10px;
+      height: 10px;
+      background: #000;
+      border-radius: 50%;
+    }
+
+    .arms {
+      position: absolute;
+      width: 100px;
+      height: 30px;
+      top: 30px;
+      left: -10px;
+    }
+
+    .arms::before,
+    .arms::after {
+      content: '';
+      position: absolute;
+      width: 40px;
+      height: 8px;
+      background: #8B4513;
+      border-radius: 4px;
+    }
+
+    .arms::before {
+      transform: rotate(20deg);
+      left: 0;
+    }
+
+    .arms::after {
+      transform: rotate(-20deg);
+      right: 0;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+  </style>
+
+  <!-- Snow Effect -->
+  <script src="{{ url_for('static', filename='js/snow.js') }}"></script>
+  
+  <script>
+    // Santa's expressions and actions with more variety
+    const santaExpressions = [
+      { text: 'Ho ho ho! Merry Christmas! 🎅', duration: 3000, action: 'laugh' },
+      { text: 'Hello there! 🎄', duration: 2000, action: 'wave' },
+      { text: 'Jingle bells, jingle bells! 🔔', duration: 2500, action: 'ring' },
+      { text: 'Happy Holidays! ❄️', duration: 2000, action: 'wave' },
+      { text: 'Have a wonderful day! 😊', duration: 2500, action: 'smile' },
+      { text: 'Gifts for everyone! 🎁', duration: 2500, action: 'laugh' },
+      { text: 'Making my list, checking it twice! 📝', duration: 3000, action: 'write' },
+      { text: 'Merry Christmas to all! 🎉', duration: 3000, action: 'wave' },
+      { text: 'Time for some hot cocoa! ☕', duration: 2500, action: 'sip' },
+      { text: 'Ho ho ho! 🎅', duration: 2000, action: 'laugh' },
+      { text: 'Merry Christmas! 🎄', duration: 2500, action: 'wave' },
+      { text: 'Happy New Year! 🎆', duration: 2500, action: 'wave' }
+    ];
+
+    // Wait for the DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize all variables at the top
+      const santa = document.getElementById('santa-container');
+      const santaSpeech = document.querySelector('.santa-speech');
+      const mouseState = {
+        x: window.innerWidth / 2,
+        y: window.innerHeight / 2,
+        lastX: window.innerWidth / 2,
+        lastY: window.innerHeight / 2,
+        eyeX: 0,
+        eyeY: 0
+      };
+      let isAnimating = false;
+      
+      // Track mouse movement for eye tracking
+      document.addEventListener('mousemove', (e) => {
+        mouseState.x = e.clientX;
+        mouseState.y = e.clientY;
+        mouseState.lastX = e.clientX;
+        mouseState.lastY = e.clientY;
+        if (typeof updateEyes === 'function') {
+          updateEyes();
+        }
+      });
+      
+      // Start eye movement loop after a short delay
+      setTimeout(() => {
+        if (typeof updateEyes === 'function') {
+          updateEyes();
+        }
+      }, 100);
+      
+      // Create Santa's SVG elements
+      function createSanta() {
+        if (!santa) return;
+        const svg = santa.querySelector('svg');
+        if (!svg) return;
+        
+        svg.innerHTML = `
+          <!-- Santa's Body -->
+          <ellipse cx="100" cy="140" rx="50" ry="55" fill="#dc2626" class="santa-body" />
+          <ellipse cx="100" cy="105" rx="50" ry="12" fill="#f9fafb" class="santa-trim" />
+          
+          <!-- Belt -->
+          <rect x="55" y="135" width="90" height="14" fill="#1f2937" rx="2" class="santa-belt" />
+          <rect x="92" y="132" width="16" height="20" fill="#fbbf24" rx="3" class="buckle" />
+          <circle cx="100" cy="142" r="3" fill="#1f2937" class="buckle-center" />
+          
+          <!-- Head -->
+          <g class="santa-head">
+            <circle cx="100" cy="65" r="38" fill="#fdd0c4" class="face" />
+            
+            <!-- Eyes -->
+            <ellipse cx="85" cy="58" rx="9" ry="11" fill="white" class="eye-white left" />
+            <ellipse cx="115" cy="58" rx="9" ry="11" fill="white" class="eye-white right" />
+            <circle cx="85" cy="58" r="5" fill="#1e3a8a" class="pupil left" />
+            <circle cx="115" cy="58" r="5" fill="#1e3a8a" class="pupil right" />
+            <circle cx="86" cy="56" r="1.5" fill="white" class="eye-sparkle" />
+            <circle cx="116" cy="56" r="1.5" fill="white" class="eye-sparkle" />
+            
+            <!-- Eyebrows -->
+            <path d="M 78 48 Q 85 45 90 48" fill="none" stroke="#7c2d12" stroke-width="2" class="eyebrow left" />
+            <path d="M 110 48 Q 115 45 122 48" fill="none" stroke="#7c2d12" stroke-width="2" class="eyebrow right" />
+            
+            <!-- Nose -->
+            <ellipse cx="100" cy="68" rx="7" ry="9" fill="#f87171" class="nose" />
+            
+            <!-- Mouth -->
+            <path d="M 90 75 Q 100 82 110 75" stroke="#7c2d12" stroke-width="2.5" fill="none" stroke-linecap="round" class="mouth" />
+            
+            <!-- Cheeks -->
+            <circle cx="70" cy="68" r="8" fill="#fca5a5" opacity="0.6" class="cheek left" />
+            <circle cx="130" cy="68" r="8" fill="#fca5a5" opacity="0.6" class="cheek right" />
+            
+            <!-- Beard -->
+            <path d="M 65 75 Q 100 120 135 75" fill="#f9fafb" class="beard" />
+            
+            <!-- Mustache -->
+            <path d="M 70 75 Q 85 80 100 75 Q 115 80 130 75" fill="none" stroke="#f9fafb" stroke-width="8" stroke-linecap="round" class="mustache" />
+            
+            <!-- Hat -->
+            <g class="hat">
+              <ellipse cx="100" cy="40" rx="35" ry="15" fill="#dc2626" class="hat-base" />
+              <path d="M 65 40 Q 100 10 135 40 L 135 42 L 65 42 Z" fill="#dc2626" class="hat-top" />
+              <ellipse cx="100" cy="42" rx="35" ry="8" fill="#f9fafb" class="hat-trim" />
+              <circle cx="100" cy="12" r="10" fill="#f9fafb" class="hat-pom" />
+            </g>
+          </g>
+          
+          <!-- Arms -->
+          <g class="santa-arms">
+            <path d="M 55 125 Q 40 150 50 170" fill="none" stroke="#dc2626" stroke-width="22" stroke-linecap="round" class="left-arm" />
+            <circle cx="50" cy="170" r="9" fill="#fdd0c4" class="left-hand" />
+            
+            <path d="M 145 130 Q 160 150 150 170" fill="none" stroke="#dc2626" stroke-width="20" stroke-linecap="round" class="right-arm" />
+            <circle cx="150" cy="170" r="9" fill="#fdd0c4" class="right-hand" />
+            
+            <!-- Bell in right hand -->
+            <g class="bell-group" transform="translate(150, 170)">
+              <circle cx="0" cy="0" r="8" fill="#fbbf24" class="bell" />
+              <line x1="0" y1="-8" x2="0" y2="0" stroke="#d97706" stroke-width="2" class="bell-string" />
+              <path d="M -4 0 Q 0 5 4 0" stroke="#d97706" stroke-width="1.5" fill="none" class="bell-clapper" />
+            </g>
+          </g>
+        `;
+        
+        // Add some CSS for Santa's animations
+        const style = document.createElement('style');
+        style.textContent = `
+          /* Eye tracking */
+          .pupil {
+            transition: transform 0.1s ease-out;
+          }
+          
+          /* Wave animation */
+          @keyframes wave {
+            0%, 100% { transform: rotate(0deg) translate(0, 0); }
+            25% { transform: rotate(-20deg) translate(-5px, -15px); }
+            50% { transform: rotate(0deg) translate(0, 0); }
+            75% { transform: rotate(20deg) translate(5px, -15px); }
+          }
+          
+          /* Laugh animation */
+          @keyframes laugh {
+            0% { transform: translateY(0) scale(1) rotate(0deg); }
+            15% { transform: translateY(-5px) scale(1.03) rotate(-2deg); }
+            30% { transform: translateY(0) scale(1) rotate(2deg); }
+            45% { transform: translateY(-3px) scale(1.02) rotate(-1deg); }
+            60% { transform: translateY(0) scale(1) rotate(1deg); }
+            75% { transform: translateY(-2px) scale(1.01) rotate(-0.5deg); }
+            100% { transform: translateY(0) scale(1) rotate(0deg); }
+          }
+          
+          /* Bell ringing animation */
+          @keyframes ringBell {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(15deg); }
+            50% { transform: rotate(-15deg); }
+            75% { transform: rotate(10deg); }
+          }
+          
+          /* Bell clapper animation */
+          @keyframes ringClapper {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(1px); }
+          }
+          
+          /* Eye blink animation */
+          @keyframes blink {
+            0%, 90%, 100% { transform: scaleY(1); }
+            95% { transform: scaleY(0.1); }
+          }
+          
+          /* Apply animations */
+          .santa-wave .right-arm {
+            animation: wave 1.5s ease-in-out 2;
+            transform-origin: top center;
+          }
+          
+          .santa-laugh .santa-head {
+            animation: laugh 1s ease-in-out 2;
+          }
+          
+          .santa-ring .bell-group {
+            animation: ringBell 0.3s ease-in-out 5;
+          }
+          
+          .santa-ring .bell-clapper {
+            animation: ringClapper 0.1s ease-in-out 15;
+          }
+          
+          /* Eye blinking */
+          .eye-white {
+            animation: blink 4s infinite;
+          }
+          .eye-white.right {
+            animation-delay: 2s;
+          }
+          
+          /* Mouth shapes */
+          .santa-laugh .mouth {
+            d: path('M 85 80 Q 100 95 115 80');
+            stroke-width: 3;
+            stroke: #7c2d12;
+          }
+          
+          .santa-wave .mouth {
+            d: path('M 85 80 Q 100 85 115 80');
+          }
+          
+          .santa-ring .mouth {
+            d: path('M 85 75 Q 90 85 100 85 Q 110 85 115 75');
+          }
+        `;
+        document.head.appendChild(style);
+      }
+      
+      // Initialize Santa
+      createSanta();
+      
+      // Get references to the newly created elements
+      const santaEyes = document.querySelectorAll('.pupil');
+      const santaMouth = document.querySelector('.mouth');
+      const santaArms = document.querySelector('.santa-arms');
+      let eyeX = 0;
+      let eyeY = 0;
+      
+      function updateEyes() {
+        if (!santa) return;
+        const pupils = document.querySelectorAll('.pupil');
+        if (!pupils.length) return;
+        
+        const santaRect = santa.getBoundingClientRect();
+        const santaCenterX = santaRect.left + santaRect.width / 2;
+        const santaCenterY = santaRect.top + santaRect.height / 3;
+        
+        // Calculate angle between santa and cursor
+        const angle = Math.atan2(mouseState.y - santaCenterY, mouseState.x - santaCenterX);
+        
+        // Calculate distance (limit how far eyes can move)
+        const distance = Math.min(4, Math.hypot(mouseState.x - santaCenterX, mouseState.y - santaCenterY) / 50);
+        
+        // Calculate new eye position
+        const eyeX = Math.cos(angle) * distance;
+        const eyeY = Math.sin(angle) * distance;
+        
+        // Apply eye movement to each pupil
+        pupils.forEach((pupil, index) => {
+          // Slightly offset the right eye
+          const offsetX = index === 0 ? -0.5 : 0.5;
+          const limit = 3;
+          const x = Math.max(-limit, Math.min(limit, eyeX)) * (index === 0 ? -1 : 1) * 0.7;
+          const y = Math.max(-limit, Math.min(limit, eyeY)) * 0.7;
+          
+          // Apply the transformation
+          pupil.style.transform = `translate(${x + offsetX}px, ${y}px)`;
+        });
+        
+        // If santaEyes exists, update them as well (for compatibility)
+        if (typeof santaEyes !== 'undefined') {
+          santaEyes.forEach((pupil, index) => {
+            const side = index === 0 ? -1 : 1; // Left or right eye
+            const baseX = index === 0 ? 85 : 115;
+            const baseY = 58;
+          
+          // Calculate position with limits to keep pupils inside eyes
+          pupil.style.transform = `translate(${x}px, ${y}px)`;
+        });
+      }
+      
+      // Santa's actions with animations and speech
+      function santaAction(action) {
+        if (!santa || !santaSpeech) return;
+        
+        const santaRect = santa.getBoundingClientRect();
+        
+        // Position speech bubble
+        santaSpeech.textContent = action.text;
+        santaSpeech.style.display = 'block';
+        santaSpeech.style.left = (santaRect.left + santaRect.width / 2) + 'px';
+        santaSpeech.style.top = (santaRect.top - 50) + 'px';
+        
+        // Remove any existing animation classes
+        santa.classList.remove('santa-wave', 'santa-laugh', 'santa-ring');
+        
+        // Apply animation based on action
+        switch(action.action) {
+          case 'wave':
+            santa.classList.add('santa-wave');
+            // Reset arm position after animation
+            setTimeout(() => {
+              santa.classList.remove('santa-wave');
+            }, 1500);
+            break;
+            
+          case 'laugh':
+            santa.classList.add('santa-laugh');
+            // Add slight head movement
+            const head = santa.querySelector('.santa-head');
+            if (head) {
+              head.style.transition = 'transform 0.3s ease-out';
+              setTimeout(() => {
+                head.style.transition = '';
+              }, 2000);
+            }
+            break;
+            
+          case 'ring':
+            santa.classList.add('santa-ring');
+            // Reset after animation
+            setTimeout(() => {
+              santa.classList.remove('santa-ring');
+            }, 1500);
+            break;
+        }
+        
+        // Add action class
+        santa.classList.add('action', action.action);
+        
+        // Special handling for different actions
+        if (action.action === 'laugh') {
+          santa.classList.add('talking');
+        } else if (action.action === 'ring') {
+          const bell = santa.querySelector('.bell');
+          if (bell) bell.style.animation = 'ring 0.2s 5';
+        }
+        
+        // Reset after action
+        setTimeout(() => {
+          santaSpeech.style.display = 'none';
+          santa.classList.remove('action', 'talking', 'wave', 'ring', 'laugh', 'shiver', 'write', 'sip');
+          
+          const bell = santa.querySelector('.bell');
+          if (bell) bell.style.animation = '';
+          
+        }, action.duration);
+      }
+
+      // Enhanced snowman building animation
+      function buildSnowman() {
+        const snowman = document.querySelector('.snowman-character');
+        if (!snowman) return;
+        
+        // Reset snowman state
+        snowman.style.opacity = '0';
+        snowman.style.transform = 'translateY(100px) scale(0.8)';
+        snowman.style.transition = 'none';
+        
+        // Get snowman parts
+        const head = snowman.querySelector('.head');
+        const torso = snowman.querySelector('.torso');
+        const bottom = snowman.querySelector('.bottom');
+        const arms = snowman.querySelectorAll('.arm');
+        const hat = snowman.querySelector('.top-hat');
+        const face = snowman.querySelector('.face');
+        
+        // Reset parts
+        if (head) head.style.transform = 'translateY(-100px)';
+        if (torso) torso.style.transform = 'translateY(100px)';
+        if (bottom) bottom.style.transform = 'translateY(200px)';
+        if (arms) {
+          arms.forEach(arm => arm.style.opacity = '0');
+        }
+        if (hat) hat.style.transform = 'translateY(-150px)';
+        if (face) face.style.opacity = '0';
+        
+        // Show snowman
+        setTimeout(() => {
+          snowman.style.transition = 'opacity 1s ease-out, transform 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
+          snowman.style.opacity = '1';
+          snowman.style.transform = 'translateY(0) scale(1)';
+          
+          // Animate parts with delays
+          setTimeout(() => {
+            if (bottom) {
+              bottom.style.transition = 'transform 0.8s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
+              bottom.style.transform = 'translateY(0)';
+            }
+          }, 300);
+          
+          setTimeout(() => {
+            if (torso) {
+              torso.style.transition = 'transform 0.7s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
+              torso.style.transform = 'translateY(0)';
+            }
+          }, 600);
+          
+          setTimeout(() => {
+            if (head) {
+              head.style.transition = 'transform 0.6s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
+              head.style.transform = 'translateY(0)';
+            }
+            if (hat) {
+              hat.style.transition = 'transform 0.7s cubic-bezier(0.18, 0.89, 0.32, 1.28)';
+              hat.style.transform = 'translateY(0)';
+            }
+          }, 900);
+          
+          setTimeout(() => {
+            if (arms) {
+              arms.forEach((arm, index) => {
+                arm.style.transition = 'opacity 0.5s ease-out';
+                arm.style.opacity = '1';
+                arm.style.animation = `wave-${index === 0 ? 'left' : 'right'} 2s ease-in-out ${index * 0.2}s`;
+              });
+            }
+            if (face) {
+              face.style.transition = 'opacity 0.5s ease-out';
+              face.style.opacity = '1';
+            }
+          }, 1200);
+          
+        }, 100);
+      }
+
+      // Set up Santa's random actions
+      function triggerSantaAction() {
+        // Prefer wave and ring actions for more visible interactions
+        const actions = ['wave', 'ring', 'laugh'];
+        const actionType = actions[Math.floor(Math.random() * actions.length)];
+        
+        // Find a matching expression for this action type
+        const matchingExpressions = santaExpressions.filter(exp => exp.action === actionType);
+        const action = matchingExpressions.length > 0 
+          ? matchingExpressions[Math.floor(Math.random() * matchingExpressions.length)]
+          : santaExpressions[Math.floor(Math.random() * santaExpressions.length)];
+        
+        santaAction(action);
+        
+        // Schedule next action between 5-10 seconds
+        const nextActionDelay = 5000 + Math.random() * 5000;
+        setTimeout(triggerSantaAction, nextActionDelay);
+      }
+      
+      // Initial actions after a short delay
+      setTimeout(() => {
+        // Start with a laugh
+        santaAction({ text: 'Ho ho ho! Welcome to PrimeMart! 🎅', duration: 3000, action: 'laugh' });
+        
+        // Start the random action cycle
+        setTimeout(triggerSantaAction, 5000);
+      }, 2000);
+      
+      // Click handler for Santa
+      const santaContainer = document.querySelector('.santa-character');
+      if (santaContainer) {
+        santaContainer.style.cursor = 'pointer';
+        santaContainer.addEventListener('click', () => {
+          const actions = ['laugh', 'wave', 'ring'];
+          const randomAction = actions[Math.floor(Math.random() * actions.length)];
+          santaAction({
+            text: santaExpressions[Math.floor(Math.random() * santaExpressions.length)].text,
+            duration: 2000,
+            action: randomAction
+          });
+        });
+      }
+      
+      // Enhanced snowman action function
+      function snowmanAction() {
+        const action = snowmanActions[Math.floor(Math.random() * snowmanActions.length)];
+        const snowman = document.querySelector('.snowman-character');
+        const face = snowman?.querySelector('.face');
+        
+        if (!snowman || !face) return;
+        
+        // Add action class
+        snowman.classList.add('action', action.action);
+        
+        // Special handling for different actions
+        switch(action.action) {
+          case 'blink':
+            face.style.animation = 'blink 0.3s';
+            break;
+          case 'wink':
+            const leftEye = face.querySelector('.eye.left');
+            if (leftEye) leftEye.style.animation = 'wink 0.5s';
+            break;
+          case 'smile':
+            const mouth = face.querySelector('.smile');
+            if (mouth) mouth.style.animation = 'smile 1s';
+            break;
+          case 'look-around':
+            const eyes = face.querySelectorAll('.eye');
+            eyes.forEach((eye, index) => {
+              eye.style.animation = `look-around 2s ${index * 0.2}s`;
+            });
+            break;
+          case 'nod':
+            snowman.style.animation = 'nod 1s';
+            break;
+          case 'shiver':
+            snowman.style.animation = 'shiver 0.5s 3';
+            break;
+        }
+        
+        // Reset after action
+        setTimeout(() => {
+          snowman.classList.remove('action', ...snowmanActions.map(a => a.action));
+          
+          // Reset animations
+          if (face) face.style.animation = '';
+          if (snowman) snowman.style.animation = '';
+          
+          const eyes = face?.querySelectorAll('.eye');
+          const mouth = face?.querySelector('.smile');
+          
+          if (eyes) {
+            eyes.forEach(eye => {
+              eye.style.animation = '';
+              eye.style.transform = '';
+            });
+          }
+          
+          if (mouth) {
+            mouth.style.animation = '';
+          }
+          
+        }, action.duration);
+      }
+  </main>
+
+  <footer class="christmas-footer">
+    <div class="footer-content">
+      <div class="snowflakes">
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❅</div>
+        <div class="snowflake">❆</div>
+      </div>
+      <p class="festive-message">
+        <span class="icon">🎄</span>
+        <span>Merry Christmas & Happy Holidays!</span>
+        <span class="icon">🎅</span>
+      </p>
+      <p class="copyright">© 2023 PrimeMart. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="#" class="footer-link">About Us</a>
+        <span class="divider">•</span>
+        <a href="#" class="footer-link">Contact</a>
+        <span class="divider">•</span>
+        <a href="#" class="footer-link">Privacy Policy</a>
+        <span class="divider">•</span>
+        <a href="#" class="footer-link">Terms of Service</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Profile Menu Script -->
+  <script>
+    console.log('Debug: Script starting...');
+    
+    // Wait for DOM to be ready
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Debug: DOM Content Loaded');
+      
+      const profileBtn = document.querySelector('.profile-btn');
+      const dropdownContent = document.querySelector('.dropdown-content');
+      
+      console.log('Debug: Elements found:', {
+        profileBtn: profileBtn,
+        dropdownContent: dropdownContent
+      });
+      
+      if (!profileBtn || !dropdownContent) {
+        console.error('Debug: Required elements not found!');
+        return;
+      }
+
+      function showDropdown() {
+        console.log('Debug: Showing dropdown');
+        profileBtn.parentElement.classList.add('active');
+        console.log('Debug: Classes after show:', profileBtn.parentElement.className);
+      }
+
+      function hideDropdown() {
+        console.log('Debug: Hiding dropdown');
+        profileBtn.parentElement.classList.remove('active');
+        console.log('Debug: Classes after hide:', profileBtn.parentElement.className);
+      }
+
+      // Show dropdown on hover
+      profileBtn.addEventListener('mouseenter', function(e) {
+        console.log('Debug: Mouse entered button');
+        showDropdown();
+      });
+
+      // Keep dropdown open when hovering over content
+      dropdownContent.addEventListener('mouseenter', function(e) {
+        console.log('Debug: Mouse entered dropdown content');
+      });
+
+      // Hide when mouse leaves content
+      dropdownContent.addEventListener('mouseleave', function(e) {
+        console.log('Debug: Mouse left dropdown content');
+        hideDropdown();
+      });
+
+      // Handle button mouse leave
+      profileBtn.addEventListener('mouseleave', function(e) {
+        console.log('Debug: Mouse left button');
+        if (!dropdownContent.matches(':hover')) {
+          console.log('Debug: Not hovering dropdown, hiding');
+          hideDropdown();
+        }
+      });
+
+      // Add click handler as fallback for mobile
+      profileBtn.addEventListener('click', function(e) {
+        console.log('Debug: Button clicked');
+        e.preventDefault();
+        e.stopPropagation();
+        const isActive = profileBtn.parentElement.classList.contains('active');
+        if (isActive) {
+          hideDropdown();
+        } else {
+          showDropdown();
+        }
+      });
+
+      // Close on outside click
+      document.addEventListener('click', function(e) {
+        if (!profileBtn.contains(e.target) && !dropdownContent.contains(e.target)) {
+          console.log('Debug: Clicked outside, hiding dropdown');
+          hideDropdown();
+        }
+      });
+
+      console.log('Debug: All event listeners attached');
+    });
+  </script>
+
+  <!-- Santa Character -->
+</body>
+</html>

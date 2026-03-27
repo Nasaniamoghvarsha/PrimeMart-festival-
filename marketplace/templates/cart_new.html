@@ -1,0 +1,509 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto; padding: 24px;">
+  <h2 style="margin-bottom: 20px;">Your Shopping Cart</h2>
+  
+  {% if items|length == 0 %}
+    <p>Your cart is empty.</p>
+  {% else %}
+    <!-- Cart Items Table -->
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+      <thead>
+        <tr style="background: #f8f9fa; text-align: left;">
+          <th style="padding: 12px; border-bottom: 1px solid #dee2e6;">Product</th>
+          <th style="padding: 12px; width: 120px; border-bottom: 1px solid #dee2e6;">Price</th>
+          <th style="padding: 12px; width: 100px; border-bottom: 1px solid #dee2e6;">Quantity</th>
+          <th style="padding: 12px; width: 120px; border-bottom: 1px solid #dee2e6; text-align: right;">Total</th>
+          <th style="padding: 12px; width: 100px; border-bottom: 1px solid #dee2e6;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr style="border-bottom: 1px solid #eee;">
+          <td style="padding: 15px 12px;">
+            <div style="font-weight: 600;">{{ item.name }}</div>
+          </td>
+          <td style="padding: 15px 12px;">${{ '%.2f'|format(item.price|float) }}</td>
+          <td style="padding: 15px 12px;">
+            <form method="POST" action="{{ url_for('product_bp.cart_update') }}" style="display: flex; align-items: center;">
+              <input type="hidden" name="product_id" value="{{ item.product_id }}">
+              <input type="number" name="quantity" value="{{ item.quantity }}" min="1" style="width: 60px; padding: 5px; border: 1px solid #ddd; border-radius: 4px;">
+              <button type="submit" style="margin-left: 5px; padding: 5px 10px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                Update
+              </button>
+            </form>
+          </td>
+          <td style="padding: 15px 12px; text-align: right;">
+            ${{ '%.2f'|format(item.price * item.quantity) }}
+          </td>
+          <td style="padding: 15px 12px;">
+            <form method="POST" action="{{ url_for('product_bp.cart_remove') }}" onsubmit="return confirm('Remove this item from cart?');">
+              <input type="hidden" name="product_id" value="{{ item.product_id }}">
+              <button type="submit" style="color: #dc3545; background: none; border: none; cursor: pointer;">
+                <i class="fas fa-trash"></i>
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Order Summary -->
+    <div style="max-width: 400px; margin-left: auto;">
+      <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        <h3 style="margin-top: 0; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #dee2e6;">Order Summary</h3>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+          <span>Subtotal:</span>
+          <span>${{ '%.2f'|format(total|float) }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #dee2e6;">
+          <span>Shipping:</span>
+          <span>Free</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 1.2em; font-weight: bold;">
+          <span>Total:</span>
+          <span>${{ '%.2f'|format(total|float) }}</span>
+        </div>
+      </div>
+
+      <!-- Checkout Button -->
+      <button id="checkoutButton" style="width: 100%; padding: 12px; background: #8B0000; color: white; border: none; border-radius: 6px; font-size: 1.1em; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+        <i class="fas fa-lock" style="margin-right: 8px;"></i> Proceed to Checkout
+      </button>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Checkout Modal -->
+<div id="checkoutModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+  <div style="background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 500px; box-shadow: 0 4px 20px rgba(0,0,0,0.2);">
+    <h2 style="margin-top: 0; color: #333;">Delivery Information</h2>
+    <p style="color: #666; margin-bottom: 20px;">Please enter your delivery address to complete your order.</p>
+    
+    <form id="checkoutForm">
+      <div style="margin-bottom: 20px;">
+        <label for="deliveryAddress" style="display: block; margin-bottom: 8px; font-weight: 500; color: #444;">Delivery Address</label>
+        <textarea id="deliveryAddress" name="delivery_address" rows="4" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 14px; resize: vertical;" required></textarea>
+      </div>
+      
+      <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+        <button type="button" id="cancelCheckout" style="padding: 10px 20px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-weight: 500;">
+          Cancel
+        </button>
+        <button type="submit" id="confirmOrder" style="padding: 10px 24px; background: #8B0000; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+          <i class="fas fa-check" style="margin-right: 8px;"></i> Place Order
+        </button>
+      </div>
+      <div id="orderStatus" style="margin-top: 15px; color: #dc3545; display: none;"></div>
+    </form>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; overflow: auto;">
+  <div style="background: white; padding: 30px; border-radius: 10px; width: 90%; max-width: 500px; margin: 50px auto; position: relative;">
+    <!-- Close button -->
+    <button id="closeSuccessModal" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+    
+    <!-- Success Icon -->
+    <div style="width: 80px; height: 80px; background: #28a745; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 36px;">
+      <i class="fas fa-check"></i>
+    </div>
+    
+    <!-- Main Message -->
+    <h2 style="margin: 0 0 15px 0; color: #333; text-align: center; font-size: 24px;">
+      Order Placed Successfully!
+    </h2>
+    
+    <!-- Order Number -->
+    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+      <p style="margin: 0 0 10px; font-size: 16px; color: #666;">
+        Your order number is:
+      </p>
+      <div style="font-size: 20px; font-weight: bold; color: #8B0000; padding: 8px 15px; background: white; border-radius: 4px; display: inline-block; border: 1px solid #eee;">
+        <span id="orderNumber">Loading...</span>
+      </div>
+    </div>
+    
+    <!-- Order Total -->
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center; border: 1px solid #e9ecef;">
+      <p style="margin: 0 0 10px; font-size: 16px; color: #666;">
+        Your order total:
+      </p>
+      <div style="font-size: 28px; font-weight: bold; color: #28a745; margin-bottom: 15px;">
+        $<span id="orderTotal">{{ '%.2f'|format(total|float) }}</span>
+      </div>
+      
+      <!-- Download Receipt Button has been removed for testing -->
+      
+      <!-- Hidden receipt content for printing -->
+      <div id="receiptContent" style="display: none;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <h2>Your Store Name</h2>
+            <p>123 Store Street, City</p>
+            <p>Phone: (123) 456-7890</p>
+          </div>
+          
+          <h3 style="text-align: center; margin: 20px 0;">ORDER RECEIPT</h3>
+          
+          <div id="printableReceiptContent">
+            <!-- Receipt content will be inserted here by JavaScript -->
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; font-style: italic;">
+            Thank you for your purchase!
+          </div>
+        </div>
+      </div>
+      
+      <!-- All download functionality has been removed -->
+      <p style="margin: 15px 0 0; color: #6c757d; font-size: 14px; text-align: center;">
+        Thank you for your purchase!
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- Move the script to the very end of the file, just before closing body tag -->
+</div> <!-- Close main content div -->
+
+<script>
+// Prevent download button creation
+const originalCreateElement = document.createElement;
+document.createElement = function(tagName) {
+  if (tagName.toLowerCase() === 'button' && arguments[1]?.id?.includes('download')) {
+    console.log('Prevented creation of download button');
+    const btn = originalCreateElement.call(document, 'div');
+    btn.style.display = 'none';
+    return btn;
+  }
+  return originalCreateElement.apply(document, arguments);
+};
+
+// Wait for the entire page to load
+window.onload = function() {
+  console.log('Page fully loaded, initializing...');
+  // Elements
+  // Get all required elements
+  const checkoutButton = document.getElementById('checkoutButton');
+  const checkoutModal = document.getElementById('checkoutModal');
+  const cancelCheckout = document.getElementById('cancelCheckout');
+  const checkoutForm = document.getElementById('checkoutForm');
+  const confirmOrder = document.getElementById('confirmOrder');
+  const orderStatus = document.getElementById('orderStatus');
+  const successModal = document.getElementById('successModal');
+  const closeSuccessModal = document.getElementById('closeSuccessModal');
+  
+  // Show checkout modal
+  checkoutButton.addEventListener('click', function() {
+    checkoutModal.style.display = 'flex';
+  });
+  
+  // Hide checkout modal
+  cancelCheckout.addEventListener('click', function() {
+    checkoutModal.style.display = 'none';
+    orderStatus.style.display = 'none';
+  });
+  
+  // Handle form submission with AJAX
+  checkoutForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const addressInput = document.getElementById('deliveryAddress');
+    const address = addressInput.value.trim();
+    
+    // Reset previous error states
+    orderStatus.textContent = '';
+    orderStatus.style.display = 'none';
+    addressInput.style.borderColor = '';
+    
+    // Validate address
+    if (!address) {
+      orderStatus.textContent = 'Please enter a delivery address';
+      orderStatus.style.display = 'block';
+      orderStatus.style.color = '#dc3545';
+      addressInput.style.borderColor = '#dc3545';
+      addressInput.focus();
+      return;
+    }
+    
+    // Show loading state
+    const originalButtonText = confirmOrder.innerHTML;
+    confirmOrder.disabled = true;
+    orderStatus.textContent = '';
+    orderStatus.style.display = 'none';
+    confirmOrder.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    
+    // Create form data
+    const formData = new FormData(checkoutForm);
+    
+    // Add CSRF token
+    const csrfToken = document.querySelector('input[name="csrf_token"]').value;
+    formData.append('csrf_token', csrfToken);
+    
+    // Send AJAX request (include credentials so session cookie is sent)
+    fetch('/checkout', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'  // To identify AJAX request on server
+      },
+      credentials: 'same-origin'
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    console.log('Delivery address:', address);
+    console.log('Number of items in cart:', '{{ items|length }}');
+    
+    // Submit order (use FormData and include credentials)
+    const submitData = new URLSearchParams();
+    submitData.append('delivery_address', address);
+
+    fetch('{{ url_for("product_bp.checkout") }}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: submitData.toString(),
+      credentials: 'same-origin'
+    })
+    .then(async response => {
+        // First, get the response as text to handle both JSON and HTML responses
+        const responseText = await response.text();
+        let data;
+        
+        try {
+            // Try to parse as JSON
+            data = JSON.parse(responseText);
+        } catch (e) {
+            // If it's not JSON, it's probably an HTML error page
+            console.error('Received non-JSON response:', responseText);
+            if (response.status === 500) {
+                throw new Error('Server error. The server encountered an unexpected condition.');
+            } else if (response.status === 404) {
+                throw new Error('The requested resource was not found.');
+            } else if (response.status === 401) {
+                throw new Error('Your session has expired. Please log in again.');
+            } else {
+                throw new Error('An error occurred while processing your request.');
+            }
+        }
+        
+        console.log('Checkout response:', data);
+        
+        if (!response.ok) {
+            // Handle HTTP error status codes
+            let errorMessage = data.message || 'An error occurred during checkout';
+            if (response.status === 400) errorMessage = 'Invalid request. ' + errorMessage;
+            else if (response.status === 401) errorMessage = 'Please log in to complete your order';
+            else if (response.status === 403) errorMessage = 'You do not have permission to perform this action';
+            else if (response.status === 500) errorMessage = 'Server error. Please try again later';
+            
+            throw new Error(errorMessage);
+        }
+        
+        if (data.status === 'error') {
+            throw new Error(data.message || 'An error occurred during checkout');
+        }
+        
+        return data;
+    })
+    .then(data => {
+      console.log('Raw server response:', data);
+      
+      if (data.status === 'success') {
+        // Hide checkout modal
+        checkoutModal.style.display = 'none';
+        
+        // Get order ID from response
+        let orderId = data.order_id || 
+                     (data.data && data.data.order_id) || 
+                     (data.insertedId) ||
+                     (data.receipt_id) ||
+                     'N/A';
+        
+        console.log('Extracted Order ID:', orderId);
+        
+        // Set order number in the UI
+        const orderNumberEl = document.getElementById('orderNumber');
+        if (orderNumberEl) {
+          orderNumberEl.textContent = orderId;
+          orderNumberEl.style.color = '#8B0000';
+          orderNumberEl.style.fontWeight = 'bold';
+        } else {
+          console.error('Could not find orderNumber element');
+        }
+        
+        // Show success modal
+        successModal.style.display = 'flex';
+        console.log('Order processed successfully with ID:', orderId);
+        
+        // Remove any download buttons that might have been created
+        document.querySelectorAll('button').forEach(btn => {
+          if (btn.textContent.includes('DOWNLOAD') || btn.innerHTML.includes('fa-file-pdf')) {
+            btn.remove();
+          }
+        });
+        
+        console.log('Success modal should now be visible');
+        
+      } else {
+        throw new Error(data.message || 'Failed to place order');
+      }
+    })
+    .catch(error => {
+      console.error('=== Order Error Details ===');
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      
+      // Show error message to user
+      orderStatus.textContent = `Error: ${error.message || 'Failed to process order'}`;
+      orderStatus.style.display = 'block';
+      orderStatus.style.color = '#dc3545';
+      
+      // Log response details if available
+      if (error.response) {
+        console.error('Response status:', error.response.status);
+        console.error('Response status text:', error.response.statusText);
+        
+        // Try to log response text
+        error.response.text().then(text => {
+          console.error('Response body:', text);
+        }).catch(e => {
+          console.error('Could not read response body:', e);
+        });
+      }
+      
+      // More detailed error message
+      let errorMessage = 'An error occurred. Please try again.';
+      
+      // Network errors
+      if (error.name === 'TypeError' && error.message.includes('NetworkError')) {
+        errorMessage = 'Network error. Please check your internet connection and try again.';
+      } 
+      // JSON parsing errors
+      else if (error.name === 'SyntaxError' && error.message.includes('JSON')) {
+        errorMessage = 'Error processing server response. The server might be experiencing issues.';
+      }
+      // Server response errors
+      else if (error.response) {
+        if (error.response.status === 500) {
+          errorMessage = 'Server error. Our team has been notified. Please try again later.';
+        } else if (error.response.status === 401) {
+          errorMessage = 'Your session has expired. Please refresh the page and log in again.';
+        } else if (error.response.status === 403) {
+          errorMessage = 'You do not have permission to perform this action.';
+        } else if (error.response.status === 400) {
+          errorMessage = 'Invalid request. Please check your input and try again.';
+        } else {
+          errorMessage = `Server error (${error.response.status}). Please try again.`;
+        }
+      }
+      // Custom error messages from the server
+      else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      // Update UI with error message
+      orderStatus.innerHTML = `
+        <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-top: 10px;">
+          <strong>Error:</strong> ${errorMessage}
+          <div style="margin-top: 5px; font-size: 0.9em; color: #721c24;">
+            If the problem persists, please contact support.
+          </div>
+        </div>
+      `;
+      orderStatus.style.display = 'block';
+      orderStatus.style.color = '#dc3545';
+      confirmOrder.disabled = false;
+      confirmOrder.innerHTML = originalButtonText;
+      
+      // Scroll to error message
+      orderStatus.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      
+      // Log the full error for debugging
+      console.error('Full error object:', error);
+    });
+  });
+  
+  // Close modals when clicking outside
+  window.addEventListener('click', function(event) {
+    if (event.target === checkoutModal) {
+      checkoutModal.style.display = 'none';
+      orderStatus.style.display = 'none';
+    }
+    if (event.target === successModal) {
+      window.location.href = '{{ url_for("product_bp.store") }}';
+    }
+  });
+  
+  // Run script after page is fully loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page is fully loaded');
+    // Add any additional initialization code here
+  });
+</script>
+</body>
+</html>
+    width: 100% !important;
+    visibility: visible !important;
+  }
+  
+  /* Hover effects */
+  button:not(:disabled):hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+  
+  button:active {
+    transform: translateY(0);
+  }
+  
+  /* Focus styles */
+  input:focus, textarea:focus, button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.2);
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    table {
+      font-size: 14px;
+    }
+    
+    .checkout-container {
+      max-width: 100%;
+    }
+  }
+  
+  /* Hide all download buttons and PDF buttons */
+  button[id*='download'],
+  button[id*='Download'],
+  button:has(.fa-file-pdf),
+  .download-btn,
+  #downloadReceiptBtn,
+  #directDownloadBtn,
+  #bottomDownloadBtn,
+  /* Target button with exact text */
+  button:contains('DOWNLOAD RECEIPT (PDF)'),
+  button:has-text('DOWNLOAD RECEIPT (PDF)') {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    position: absolute !important;
+    left: -9999px !important;
+  }
+{% endblock %}
