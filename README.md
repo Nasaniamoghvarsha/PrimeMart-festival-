@@ -14,6 +14,8 @@ PrimeMart is a modern, responsive electronics marketplace built with Flask and M
 ### Screenshots
 
 ![Welcome Page](screenshots/welcome.png)
+![Store Page](screenshots/products.png)
+![Signup Page](screenshots/signup.png)
 ![Login Page](screenshots/login.png)
 
 ## Project Structure
